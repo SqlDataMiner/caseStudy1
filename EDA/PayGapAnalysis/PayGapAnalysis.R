@@ -32,3 +32,8 @@ counts_by_uni <- aggregate(uni_data$EmployerName, by=list(uni_data$EmployerName,
 
 counts_by_institution <- aggregate(counts_by_uni$Group.2, by=list(counts_by_uni$Group.2, counts_by_uni$x), FUN=length)
 counts_by_institution <- counts_by_institution[order(counts_by_institution$Group.1, counts_by_institution$Group.2),]
+
+ctable_for_inst_by_year <- addmargins(table(uni_data$institution, uni_data$start_year))
+
+ctable_for_inst_by_year
+chisq.test(ctable_for_inst_by_year)
