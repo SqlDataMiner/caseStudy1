@@ -37,3 +37,18 @@ ctable_for_inst_by_year <- addmargins(table(uni_data$institution, uni_data$start
 
 ctable_for_inst_by_year
 chisq.test(ctable_for_inst_by_year)
+
+boxplot(uni_data$FemaleBonusPercent, uni_data$FemaleLowerQuartile, uni_data$FemaleLowerMiddleQuartile,
+        uni_data$FemaleUpperMiddleQuartile, uni_data$FemaleTopQuartile,
+        uni_data$MaleBonusPercent, uni_data$MaleLowerQuartile, uni_data$MaleLowerMiddleQuartile,
+        uni_data$MaleUpperMiddleQuartile, uni_data$MaleTopQuartile,
+        main="Multiple box plots",
+        names = c("F bon", "F Q1", "F Q2",
+
+                  "F Q3", "F Q4",
+                  "M bon", "M Q1", "M Q2",
+                  "M Q3", "M Q4"),
+        horizontal = TRUE,
+        notch=TRUE,
+        las=1
+        )
