@@ -40,18 +40,20 @@ uni_data <- inner_join(uni_data_emp, merged_tables, by="EmployerId")
 
 #lets find how many universities have changed name.
 name_changes <- uni_data %>%
-                #filter(EmployerId == 1547 | EmployerId == 296) %>%
                 filter(EmployerName.y != EmployerName.x) %>%
                 select(EmployerId)  %>%
                 distinct()
 
+# Exclude current year as only data for 2 unis, so not representative sample.
 data_excluding_2021 <- filter(uni_data, start_year !=2021)
 
 counts_by_uni <- aggregate(data_excluding_2021$EmployerId, by=list(data_excluding_2021$EmployerId, data_excluding_2021$institution), FUN=length) %>%
                   select(EmployerId=Group.1,institution=Group.2, Count=x  )
 
+# there are 89 unis with 4 years of results excluding current year
 uni_with_full_result_sets <- filter(counts_by_uni, Count == 4)
 
+# There are 27 - determined for group discussion.
 unis_who_changed_names_with_full_results <- inner_join(name_changes, uni_with_full_result_sets, by="EmployerId") %>%
                                             select(EmployerId) %>%
                                             distinct()
@@ -59,3 +61,6 @@ unis_who_changed_names_with_full_results <- inner_join(name_changes, uni_with_fu
 counts_by_institution <- aggregate(uni_with_full_result_sets$institution,
                                    by=list(uni_with_full_result_sets$institution, uni_with_full_result_sets$Count),
                                    FUN=length)
+
+# I expect this to have 89 * 4 = 356 rows which it has.
+uni_data_full_results <- inner_join(data_excluding_2021, uni_with_full_result_sets, by="EmployerId")
