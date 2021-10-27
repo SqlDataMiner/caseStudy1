@@ -28,7 +28,7 @@ merged_tables <- Reduce(function(x,y) {merge(x,y, all=TRUE)}, data_tables)
 # join the university list with the pay gap data
 # Note that we can't join on name as they are not consistent
 # we are told so must change to join on ID
-uni <- read.csv("data/universities.csv")
+uni <- read.csv("data/universities_with_russell_groups.csv")
 uni_data_find_employers <- inner_join(uni, merged_tables, by="EmployerName")
 uni_employers_by_id <- uni_data_find_employers %>%
   select(EmployerId, EmployerName) %>%
@@ -64,3 +64,9 @@ counts_by_institution <- aggregate(uni_with_full_result_sets$institution,
 
 # I expect this to have 89 * 4 = 356 rows which it has.
 uni_data_full_results <- inner_join(data_excluding_2021, uni_with_full_result_sets, by="EmployerId")
+
+# There are 24 Russell group unis but 6 are missing
+russel_group_unis <- filter(data_excluding_2021, Is_Russel_group ==1) %>%
+ select(EmployerName.x) %>%
+ distinct() %>%
+  arrange(EmployerName.x)

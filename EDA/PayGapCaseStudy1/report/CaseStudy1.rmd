@@ -1,0 +1,110 @@
+---
+title: "Gender Pay Gap in UK Universities"
+author: "Group 5: Benjamin Bray, Leanne Allen, Nadia Korchynska and Stephen Wotton"
+date: "2021-10-27"
+output:
+  html_document:
+    theme: yeti
+    number_sections: false
+fontsize: 11pt
+urlcolor: blue
+header-includes:
+  - \usepackage{dplyr}
+  - \usepackage{tidyverse}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      message=FALSE,
+                      warning=FALSE,
+                      fig.align="center"
+                    )
+```
+```{r generate_dataset_for_analysis}
+library(dplyr)
+library(tidyverse)
+
+# cater for running as script and as markdown doc using knit - directory differs in intellij
+data_path <-  "../data"
+if(!dir.exists(data_path)){
+  data_path <- "data"
+}
+
+# define function for reading table and adding the start and end data to the data
+read_data_augment_with_years <- function(file_to_read){
+  # find the years from file name
+  years_result <- gregexpr("[0-9]{4}", file_to_read)
+  start_year_index <- years_result[[1]][[1]]
+  end_year_index <- years_result[[1]][[2]]
+  start_year <- substr(file_to_read, start_year_index, start_year_index + 3)
+  end_year <- substr(file_to_read, end_year_index, end_year_index + 3)
+
+  # read table and add the years to data
+  table <- read.csv(file_to_read) %>%
+    mutate(start_year = start_year) %>%
+    mutate(end_year = end_year)
+
+  table
+}
+
+#read all the data and merge together
+data_files <- list.files(path=data_path, full.names=TRUE, pattern="^UK Gender Pay Gap Data -(.*).csv$" )
+data_tables <- lapply(data_files,  read_data_augment_with_years)
+merged_tables <- Reduce(function(x,y) {merge(x,y, all=TRUE)}, data_tables)
+
+# Join the university list with the pay gap data
+# Note that we can't join on name as they are not consistent
+# we are told so must change to join on ID
+uni <- read.csv(str_interp("${data_path}/universities.csv"))
+uni_data_find_employers <- inner_join(uni, merged_tables, by="EmployerName")
+uni_employers_by_id <-  uni_data_find_employers %>%
+                        select(EmployerId, EmployerName) %>%
+                        distinct()
+
+# We join on name, find the id from the name then join by id which will
+# return only the employers of interest in a consitent manner i.e. universities
+# Exclude current year as only data for 2 universities, so not representative sample.
+# Resolve names from join renaming the column from the universities file and
+# dropping the other with select(-starts_with....) which returns all but that column
+uni_data_emp <- inner_join(uni, uni_employers_by_id, by="EmployerName")
+uni_data <- inner_join(uni_data_emp, merged_tables, by="EmployerId") %>%
+            filter( start_year !=2021) %>%
+            rename("EmployerName"=EmployerName.x) %>%
+            select(-starts_with("EmployerName.y"))
+
+# Find the universities which have full result sets for the years of interest i.e. 4 years pre start year 2021
+uni_with_full_result_sets <- aggregate(uni_data$EmployerId,
+                                        by=list(uni_data$EmployerId, uni_data$institution), FUN=length) %>%
+                            select(EmployerId=Group.1,institution=Group.2, Count=x  ) %>%
+                            filter(Count == 4) %>%
+                            inner_join(uni_data, by="EmployerId")
+
+
+```
+## Plots
+```{r output_uni_names, include = TRUE}
+  uni_with_full_result_sets %>%
+          select(EmployerName) %>%
+          distinct() %>%
+          arrange(EmployerName)
+```
+
+## Data Sources
+Data was obtained from two sources:
+
+### Sheffield University
+The department provided a set of University names split by whether they were a university prior to 1992 or were former polytechnics which gained university status post 1992.
+
+### UK Gender Pay Gap Government Service
+The UK Government provides pay gap data by gender from companies which are obligated and those which elect to submit it.
+
+The data service is at: https://gender-pay-gap.service.gov.uk/
+
+Note that the data diction ary can be found on page https://gender-pay-gap.service.gov.uk/viewing/download by clicking on the "About CSV data" link (which is a HTML details element without an ID hence the report is unable to link to it for you).
+
+### Further Notes
+It should be noted that twenty-seven Universities changed their employer name  throughout the data which required data to be cleaned.
+
+In data submitted for 2021/22 when the data was downloaded it contained only two universities; thus this year was excluded as the dataset was incomplete.
+
+Of the ninety-six universities within the datasets only eighty-nine had data spanning all fours years of interest, namely: 2017/18, 2018/19, 2019/20, 2020/21.
