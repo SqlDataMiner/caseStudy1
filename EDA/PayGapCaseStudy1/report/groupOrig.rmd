@@ -3,7 +3,8 @@ title: "Case Study 1 - University Gender Pay Gap"
 author: "Leanne Allen, Benjamin Bray, Nadiia Korchynska, Stephen Wotton"
 date: "1/11/2021"
 output:
-html_document: default
+html_document:
+theme: yeti
 word_document: default
 pdf_document: default
 ---
@@ -14,7 +15,7 @@ knitr::opts_chunk$set(echo = FALSE, messages = FALSE, warning = FALSE)
 
 ```
 
-```{r, include = FALSE, echo = FALSE}
+```{r load_data, include = FALSE, echo=FALSE}
 #load data
 library(tidyverse)
 
@@ -23,26 +24,55 @@ pay18 <- read_csv("../data/UK Gender Pay Gap Data - 2018 to 2019.csv")
 pay19 <- read_csv("../data/UK Gender Pay Gap Data - 2019 to 2020.csv")
 pay20 <- read_csv("../data/UK Gender Pay Gap Data - 2020 to 2021.csv")
 universities <- read_csv("../data/universities.csv")
+
 pay17year <- pay17 %>%
-  mutate(year = "2017/18") %>%
-  inner_join(universities, by = "EmployerName")
+  mutate(year = "2017/18")
 
 pay18year <- pay18 %>%
-  mutate(year = "2018/19") %>%
-  inner_join(universities, by = "EmployerName")
+  mutate(year = "2018/19")
 
 pay19year <- pay19 %>%
-  mutate(year = "2019/20") %>%
-  inner_join(universities, by = "EmployerName")
+  mutate(year = "2019/20")
 
 pay20year <- pay20 %>%
-  mutate(year = "2020/21") %>%
-  inner_join(universities, by = "EmployerName")
-payGapData <- rbind(pay17year, pay18year, pay19year, pay20year)
+  mutate(year = "2020/21")
+
+mergedPayGapData <- rbind(pay17year, pay18year, pay19year, pay20year)
+
+# Join the university list with the pay gap data
+# Note that we can't join on name as they are not consistent
+# we are told so must change to join on ID
+universitiesWithEmployerNameInitialMatch <- inner_join(universities, mergedPayGapData, by="EmployerName")
+universityEmployersById <-  universitiesWithEmployerNameInitialMatch %>%
+  select(EmployerId, EmployerName) %>%
+  distinct()
+
+# We join on name, find the id from the name then join by id which will
+# return only the employers of interest in a consitent manner i.e. universities
+# Exclude current year as only data for 2 universities, so not representative sample.
+# Resolve names from join renaming the column from the universities file and
+# dropping the other with select(-starts_with....) which returns all but that column
+payGapDataAllUniversities <- inner_join(universities, universityEmployersById, by="EmployerName") %>%
+  inner_join(mergedPayGapData, by="EmployerId") %>%
+  rename("EmployerName"=EmployerName.x) %>%
+  select(-starts_with("EmployerName.y"))
+
+# Find the universities which have full result sets for the years of interest i.e. 4 years data
+# Note there are 89 universities with full set of data for 4 years, therefore we need 89*4 = 356 rows
+# previously we were only showing 321 rows
+payGapData <- aggregate(payGapDataAllUniversities$EmployerId,
+                        by=list(payGapDataAllUniversities$EmployerId, payGapDataAllUniversities$institution), FUN=length) %>%
+  select(EmployerId=Group.1,institution=Group.2, Count=x  ) %>%
+  filter(Count == 4) %>%
+  inner_join(payGapDataAllUniversities, by="EmployerId") %>%
+  rename("institution"=institution.x) %>%
+  select(-starts_with("institution.y"))
+
+
 ```
 
 
-```{r, include=FALSE, echo = FALSE}
+```{r analysis_diff_median, include=FALSE, echo = FALSE}
 payGapData %>%
   select(EmployerName, year, DiffMedianHourlyPercent) %>%
   pivot_wider(names_from = year,
@@ -52,7 +82,7 @@ payGapData %>%
 
 # Table #1
 
-```{r, echo = FALSE}
+```{r analysis_paygap, echo = FALSE}
 
 hourly<-payGapData %>%
   group_by(year, institution) %>%
@@ -72,7 +102,7 @@ payGapDataLong <- payGapData %>%
 
 # Table #2 - Average Median Gender Percentage Difference For Hourly Wage
 
-```{r, echo = FALSE}
+```{r analysis_percent_difference, echo = FALSE}
 hourly<-payGapData %>%
   group_by(year) %>%
   summarise(meanGap = mean(DiffMedianHourlyPercent))
@@ -83,13 +113,34 @@ knitr::kable(hourly, col.names = c("Year", "Percentage Difference"), digits = 2,
 # Plot #1 - Pre-92 and Post-92 Universities Average Gender Difference Bonus Percentages
 
 
-```{r, fig.align = 'center', fig.cap = "PlotAcross all four years of data, it is consistent that Pre-92 universities have a higher percentage gap in the mean percentages of bonuses close to 50% or above, whereas Post-92 universities remain with a gap < 25%. The source of the data is from... ", out.width = "75%", message=FALSE, warning = FALSE}
+```{r analysis_bonus, fig.align = 'center', fig.cap = "PlotAcross all four years of data, it is consistent that Pre-92 universities have a higher percentage gap in the mean percentages of bonuses close to 50% or above, whereas Post-92 universities remain with a gap < 25%. The source of the data is from... ", out.width = "75%", , message=FALSE, warning = FALSE}
 
 
 payGapData%>%
   ggplot(aes(y= DiffMeanBonusPercent, x = institution))+geom_boxplot()+facet_grid(cols = vars(year)) + labs(y = "Average Gender Difference of Bonus Percentages", x = "") + theme_minimal()+theme(strip.background = element_rect(fill="#FC4E07" ))+ scale_x_discrete(breaks = c("post-92", "pre-92"), labels =c( "Post-92", "Pre-92"))
 
 ```
+
+## Data Sources
+Data was obtained from two sources:
+
+### Sheffield University
+The department provided a set of University names split by whether they were a university prior to 1992 or were former polytechnics which gained university status post 1992.
+
+### UK Gender Pay Gap Government Service
+The UK Government provides pay gap data by gender from companies which are obligated and those which elect to submit it.
+
+The data service is at: https://gender-pay-gap.service.gov.uk/
+
+Note that the data diction ary can be found on page https://gender-pay-gap.service.gov.uk/viewing/download by clicking on the "About CSV data" link (which is a HTML details element without an ID hence the report is unable to link to it for you).
+
+### Further Notes
+It should be noted that twenty-seven Universities changed their employer name  throughout the data which required data to be cleaned.
+
+In data submitted for 2021/22 when the data was downloaded it contained only two universities; thus this year was excluded as the dataset was incomplete.
+
+Of the ninety-six universities within the datasets only eighty-nine had data spanning all fours years of interest, namely: 2017/18, 2018/19, 2019/20, 2020/21.
+
 
 
 
