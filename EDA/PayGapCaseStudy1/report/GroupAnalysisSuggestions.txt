@@ -1,5 +1,5 @@
 I have tried to combine our R markdown documents.  These are the changes I am proposing, I have merged in suggestions 1-3,
-and not changed anything regarding section 4 - 5:
+and not changed anything regarding points 4 - 6:
 
 1. There is an error in what the tutor is doing, he's joining on Employer name but the names are not consistent.
 Hence the data only has 321 rows in it and should have at least 89 * 4=356 rows.
@@ -18,3 +18,11 @@ LaTeX to be installed (which I have) but also set up with knitr.
 5. I know the tutor does this in his examples but we are using heading 1 for sub headings by only having a single #
 the title is output as heading 1, my suggestion would be to make the sub headings use ## or greater depending on
 heading depth.
+
+6. I've noticed that knit is outputting the following warning (see the render tab in RStudio), note this occurs before I made any changes:
+Output created: groupOrig.html
+Warning message:
+Removed 32 rows containing non-finite values (stat_boxplot).
+
+I've not had a change to look at this yet.
+
