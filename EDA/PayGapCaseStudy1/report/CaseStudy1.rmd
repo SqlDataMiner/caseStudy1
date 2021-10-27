@@ -21,7 +21,6 @@ knitr::opts_chunk$set(echo=FALSE,
                     )
 ```
 ```{r generate_dataset_for_analysis}
-library(dplyr)
 library(tidyverse)
 
 # cater for running as script and as markdown doc using knit - directory differs in intellij

@@ -1,0 +1,20 @@
+I have tried to combine our R markdown documents.  These are the changes I am proposing, I have merged in suggestions 1-3,
+and not changed anything regarding section 4 - 5:
+
+1. There is an error in what the tutor is doing, he's joining on Employer name but the names are not consistent.
+Hence the data only has 321 rows in it and should have at least 89 * 4=356 rows.
+I spent quite a bit of time verifying the data in my results are correct, I've included my code and changed it to fit in
+with the variable naming convention chosen and have done the least number of modifications possible. I've also changed all my variables
+to be consistent with the format within the document.
+
+2. I have added the data sources section at the bottom
+
+3. I have added section headings to help in the IDE after r declaration, i.e: ``` {r sectionheader, options...
+which the tutor suggested doing - allows you to jump to a section in the IDE.
+
+4. I think we should remove the word and pdf output one requires word to be installed I believe and the other required
+LaTeX to be installed (which I have) but also set up with knitr.
+
+5. I know the tutor does this in his examples but we are using heading 1 for sub headings by only having a single #
+the title is output as heading 1, my suggestion would be to make the sub headings use ## or greater depending on
+heading depth.

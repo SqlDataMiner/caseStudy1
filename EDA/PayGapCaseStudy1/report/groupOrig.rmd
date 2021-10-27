@@ -1,0 +1,95 @@
+---
+title: "Case Study 1 - University Gender Pay Gap"
+author: "Leanne Allen, Benjamin Bray, Nadiia Korchynska, Stephen Wotton"
+date: "1/11/2021"
+output:
+html_document: default
+word_document: default
+pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, messages = FALSE, warning = FALSE)
+
+```
+
+```{r, include = FALSE, echo = FALSE}
+#load data
+library(tidyverse)
+
+pay17 <- read_csv("../data/UK Gender Pay Gap Data - 2017 to 2018.csv")
+pay18 <- read_csv("../data/UK Gender Pay Gap Data - 2018 to 2019.csv")
+pay19 <- read_csv("../data/UK Gender Pay Gap Data - 2019 to 2020.csv")
+pay20 <- read_csv("../data/UK Gender Pay Gap Data - 2020 to 2021.csv")
+universities <- read_csv("../data/universities.csv")
+pay17year <- pay17 %>%
+  mutate(year = "2017/18") %>%
+  inner_join(universities, by = "EmployerName")
+
+pay18year <- pay18 %>%
+  mutate(year = "2018/19") %>%
+  inner_join(universities, by = "EmployerName")
+
+pay19year <- pay19 %>%
+  mutate(year = "2019/20") %>%
+  inner_join(universities, by = "EmployerName")
+
+pay20year <- pay20 %>%
+  mutate(year = "2020/21") %>%
+  inner_join(universities, by = "EmployerName")
+payGapData <- rbind(pay17year, pay18year, pay19year, pay20year)
+```
+
+
+```{r, include=FALSE, echo = FALSE}
+payGapData %>%
+  select(EmployerName, year, DiffMedianHourlyPercent) %>%
+  pivot_wider(names_from = year,
+              values_from = DiffMedianHourlyPercent) %>%
+  na.omit()
+```
+
+# Table #1
+
+```{r, echo = FALSE}
+
+hourly<-payGapData %>%
+  group_by(year, institution) %>%
+  summarise(meanGap = mean(DiffMedianHourlyPercent), .groups = "drop") %>%
+  pivot_wider(names_from = institution, values_from = meanGap)
+knitr::kable(hourly, digits = 2, align = "cc", col.names = c("Year", "Post-92", "Pre-92"))
+
+payGapDataLong <- payGapData %>%
+  pivot_longer(DiffMeanHourlyPercent:FemaleTopQuartile,
+               names_to = "payGapMeasure",
+               values_to = "value") %>%
+  select(EmployerName, year, payGapMeasure, value, institution)
+
+```
+
+
+
+# Table #2 - Average Median Gender Percentage Difference For Hourly Wage
+
+```{r, echo = FALSE}
+hourly<-payGapData %>%
+  group_by(year) %>%
+  summarise(meanGap = mean(DiffMedianHourlyPercent))
+knitr::kable(hourly, col.names = c("Year", "Percentage Difference"), digits = 2, align = "cc")
+```
+
+
+# Plot #1 - Pre-92 and Post-92 Universities Average Gender Difference Bonus Percentages
+
+
+```{r, fig.align = 'center', fig.cap = "PlotAcross all four years of data, it is consistent that Pre-92 universities have a higher percentage gap in the mean percentages of bonuses close to 50% or above, whereas Post-92 universities remain with a gap < 25%. The source of the data is from... ", out.width = "75%", message=FALSE, warning = FALSE}
+
+
+payGapData%>%
+  ggplot(aes(y= DiffMeanBonusPercent, x = institution))+geom_boxplot()+facet_grid(cols = vars(year)) + labs(y = "Average Gender Difference of Bonus Percentages", x = "") + theme_minimal()+theme(strip.background = element_rect(fill="#FC4E07" ))+ scale_x_discrete(breaks = c("post-92", "pre-92"), labels =c( "Post-92", "Pre-92"))
+
+```
+
+
+
