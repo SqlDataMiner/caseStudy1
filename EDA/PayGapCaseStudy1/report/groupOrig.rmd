@@ -120,6 +120,49 @@ payGapData%>%
   ggplot(aes(y= DiffMeanBonusPercent, x = institution))+geom_boxplot()+facet_grid(cols = vars(year)) + labs(y = "Average Gender Difference of Bonus Percentages", x = "") + theme_minimal()+theme(strip.background = element_rect(fill="#FC4E07" ))+ scale_x_discrete(breaks = c("post-92", "pre-92"), labels =c( "Post-92", "Pre-92"))
 
 ```
+# Plot #2 - Hourly Pay Overview
+
+```{r analysis_hourly_pay_quartiles, fig.align = 'center', fig.cap = "Although the trend is gradually decreasing, males dominate in the top hourly pay. Females dominate in the lower 3 quartiles of hourly pay with a trend: as pay increases the % of females in the corresponding quartile decreases. This trend is apparent across both categories of institutions, although it is more pronounced in the pre-92 group where males comprised 58.6% of the top quartile in the pre-92 group in 2020/21 compared to 51.1% in the post-92 group. This might be partially explained by there being a greater proportion of males in the pre-92 group in general compared to the post-92 group (45.6% are males in the pre-92 group vs 42.1% in the post-92 group).", out.width = "75%", fig.height = 6 , message=FALSE, warning = FALSE}
+
+library(tidyr)
+library(ggplot2)
+
+## reshaping data. Grouping by year and institution type, taking nean from all the quartiles and rounding it up.
+df2 <- select(payGapData, institution, year, MaleLowerQuartile ,FemaleLowerQuartile,
+              MaleLowerMiddleQuartile,  FemaleLowerMiddleQuartile, MaleUpperMiddleQuartile,
+              FemaleUpperMiddleQuartile, MaleTopQuartile,FemaleTopQuartile) %>%
+  group_by(institution , year) %>%
+  summarise(mean_MaleLowerQuartile = (round( mean(MaleLowerQuartile), digits = 1)) ,
+            mean_FemaleLowerQuartile = round(mean(FemaleLowerQuartile), digits = 1),
+            mean_MaleLowerMiddleQuartile = round(mean(MaleLowerMiddleQuartile), digits = 1),
+            mean_FemaleLowerMiddleQuartile = round(mean(FemaleLowerMiddleQuartile), digits = 1),
+            mean_MaleUpperMiddleQuartile = round(mean(MaleUpperMiddleQuartile), digits = 1),
+            mean_FemaleUpperMiddleQuartile = round(mean(FemaleUpperMiddleQuartile), digits = 1),
+            mean_MaleTopQuartile = round(mean(MaleTopQuartile), digits = 1),
+            mean_FemaleTopQuartile = round(mean(FemaleTopQuartile), digits = 1))
+
+# pivoting data so that all the values appear in one column
+df_for_plot <- pivot_longer(df2,
+                            cols = -c('institution','year'),
+                            names_to = 'gender_quartile',
+                            values_to = 'mean') %>%
+  mutate(gender = case_when(grepl("Male", gender_quartile) ~ "Male",
+                            grepl("Female", gender_quartile) ~"Female")) %>%
+  mutate(quartile = case_when(grepl("Male", gender_quartile) ~ gsub("mean_Male","",gender_quartile),
+                              grepl("Female", gender_quartile) ~ gsub("mean_Female","",gender_quartile)))
+
+#turning quartiles to factors to force their order in the graph
+df_for_plot$quartile = factor(df_for_plot$quartile, levels=c('TopQuartile','UpperMiddleQuartile','LowerMiddleQuartile','LowerQuartile'))
+
+p2 <- ggplot(df_for_plot, aes(x = year, y = mean, fill = gender)) +
+  geom_col(position = 'stack') +
+  facet_grid( quartile ~ institution) +
+  geom_text(aes(label = mean), size = 3, hjust = 0.5, vjust = 3, position =     "stack") +
+  labs(x = "Year", y= "Hourly pay per gender %")
+p2
+
+
+```
 
 ## Data Sources
 Data was obtained from two sources:
@@ -140,7 +183,3 @@ It should be noted that twenty-seven Universities changed their employer name  t
 In data submitted for 2021/22 when the data was downloaded it contained only two universities; thus this year was excluded as the dataset was incomplete.
 
 Of the ninety-six universities within the datasets only eighty-nine had data spanning all fours years of interest, namely: 2017/18, 2018/19, 2019/20, 2020/21.
-
-
-
-
