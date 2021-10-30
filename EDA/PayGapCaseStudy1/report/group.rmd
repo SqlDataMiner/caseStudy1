@@ -19,11 +19,11 @@ knitr::opts_chunk$set(echo = FALSE, messages = FALSE, warning = FALSE)
 #load data
 library(tidyverse)
 
-pay17 <- read_csv("../data/UK Gender Pay Gap Data - 2017 to 2018.csv")
-pay18 <- read_csv("../data/UK Gender Pay Gap Data - 2018 to 2019.csv")
-pay19 <- read_csv("../data/UK Gender Pay Gap Data - 2019 to 2020.csv")
-pay20 <- read_csv("../data/UK Gender Pay Gap Data - 2020 to 2021.csv")
-universities <- read_csv("../data/universities.csv")
+pay17 <- read_csv("data/UK Gender Pay Gap Data - 2017 to 2018.csv")
+pay18 <- read_csv("data/UK Gender Pay Gap Data - 2018 to 2019.csv")
+pay19 <- read_csv("data/UK Gender Pay Gap Data - 2019 to 2020.csv")
+pay20 <- read_csv("data/UK Gender Pay Gap Data - 2020 to 2021.csv")
+universities <- read_csv("data/universities.csv")
 
 pay17year <- pay17 %>%
   mutate(year = "2017/18")
