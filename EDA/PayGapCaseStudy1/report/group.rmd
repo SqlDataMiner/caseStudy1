@@ -123,7 +123,7 @@ payGapData%>%
 
 Note that there were thirty-six rows of data which did not have the column `DiffMeanBonusPercent` defined hence we have excluded those results.  These were from seventeen different universities:
 
-|Number of Universities Missing Data|Number of Rows of Missing Data|
+|Number of Universities Missing Data Values|Number of Rows of Missing Values|
 |:----------------:|:----------------:|
 |5|1|
 |6|2|
