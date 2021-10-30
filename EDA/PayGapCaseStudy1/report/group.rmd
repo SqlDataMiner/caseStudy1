@@ -131,11 +131,12 @@ Note that there were thirty-six rows of data which did not have the column `Diff
 |1|4|
 Total Universities: 17 | Total Rows: 36|
 
+
 ## Plot #2 - Hourly Pay Overview
 
 ```{r analysis_hourly_pay_quartiles, fig.align = 'center', fig.cap = "Although the trend is gradually decreasing, males dominate in the top hourly pay. Females dominate in the lower 3 quartiles of hourly pay with a trend: as pay increases the % of females in the corresponding quartile decreases. This trend is apparent across both categories of institutions, although it is more pronounced in the pre-92 group where males comprised 58.6% of the top quartile in the pre-92 group in 2020/21 compared to 51.1% in the post-92 group. This might be partially explained by there being a greater proportion of males in the pre-92 group in general compared to the post-92 group (45.6% are males in the pre-92 group vs 42.1% in the post-92 group).", out.width = "75%", fig.height = 6 , message=FALSE, warning = FALSE}
 
-## reshaping data. Grouping by year and institution type, taking nean from all the quartiles and rounding it up.
+## reshaping data. Grouping by year and institution type, taking mean from all the quartiles and rounding it up.
 df2 <- select(payGapData, institution, year, MaleLowerQuartile ,FemaleLowerQuartile,
               MaleLowerMiddleQuartile,  FemaleLowerMiddleQuartile, MaleUpperMiddleQuartile,
               FemaleUpperMiddleQuartile, MaleTopQuartile,FemaleTopQuartile) %>%
@@ -160,7 +161,7 @@ df_for_plot <- pivot_longer(df2,
                               grepl("Female", gender_quartile) ~ gsub("mean_Female","",gender_quartile)))
 
 #turning quartiles to factors to force their order in the graph
-df_for_plot$quartile = factor(df_for_plot$quartile, levels=c('TopQuartile','UpperMiddleQuartile','LowerMiddleQuartile','LowerQuartile'))
+df_for_plot$quartile <- factor(df_for_plot$quartile, levels=c('TopQuartile','UpperMiddleQuartile','LowerMiddleQuartile','LowerQuartile'))
 
 p2 <- ggplot(df_for_plot, aes(x = year, y = mean, fill = gender)) +
   geom_col(position = 'stack') +
@@ -184,7 +185,6 @@ ggplot(data = p92,
        subtitle = 'By type of University Institution') +
   geom_line() +
   ylim(0,20)
-
 
 
 ```
