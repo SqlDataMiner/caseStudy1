@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = FALSE, messages = FALSE, warning = FALSE)
 ```{r load_data, include = FALSE, echo=FALSE}
 #load data
 library(tidyverse)
+library(gridExtra)
 
 pay17 <- read_csv("../data/UK Gender Pay Gap Data - 2017 to 2018.csv")
 pay18 <- read_csv("../data/UK Gender Pay Gap Data - 2018 to 2019.csv")
@@ -188,6 +189,236 @@ ggplot(data = p92,
 
 
 ```
+## Plot #3 Scatter graphs of percentage of females within quartile data
+```{r scatter_graphs}
+
+yLowerBound <- 20
+yUpperBound <- 85
+yMidpoint = (yUpperBound-yLowerBound)/2
+lower2017 <- ggplot(payGapData %>%
+        filter(year == "2017/18") %>%
+        filter(is.na(FemaleLowerQuartile) == FALSE)
+        , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+              )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        ylab("2017") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              legend.position = "none",
+              plot.title = element_text(hjust = 0.5)
+        ) +
+        labs(x="2017", y="2017", title = "Lower")
+
+lowerMiddle2017 <- ggplot(payGapData %>%
+                   filter(year == "2017/18") %>%
+                   filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme(
+        axis.title =element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5)
+  ) +
+  labs(x="", y="", title = "Lower Middle")
+
+upperMiddle2017 <- ggplot(payGapData %>%
+                            filter(year == "2017/18") %>%
+                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank(),
+        legend.position = "none",
+         plot.title = element_text(hjust = 0.5)
+  ) +
+  labs(x="", y="", title = "Upper Middle")
+
+top2017 <- ggplot(payGapData %>%
+                            filter(year == "2017/18") %>%
+                            filter(is.na(FemaleTopQuartile) == FALSE)
+  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank(),
+         plot.title = element_text(hjust = 0.5)
+  ) +
+  labs(x="", y="", title = "Top")
+
+lower2018 <- ggplot(payGapData %>%
+                      filter(year == "2018/19") %>%
+                      filter(is.na(FemaleLowerQuartile) == FALSE)
+  , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  ylab("2018") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "none"
+  )
+
+lowerMiddle2018 <- ggplot(payGapData %>%
+                            filter(year == "2018/19") %>%
+                            filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme(
+    axis.title =element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "none"
+  )
+
+upperMiddle2018 <- ggplot(payGapData %>%
+                            filter(year == "2018/19") %>%
+                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank(),
+         legend.position = "none"
+  )
+
+top2018 <- ggplot(payGapData %>%
+                    filter(year == "2018/19") %>%
+                    filter(is.na(FemaleTopQuartile) == FALSE)
+  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank()
+  )
+
+lower2019 <- ggplot(payGapData %>%
+                      filter(year == "2019/20") %>%
+                      filter(is.na(FemaleLowerQuartile) == FALSE)
+  , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  ylab("2019") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "none"
+  )
+
+lowerMiddle2019 <- ggplot(payGapData %>%
+                            filter(year == "2019/20") %>%
+                            filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme(
+    axis.title =element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "none"
+  )
+
+upperMiddle2019 <- ggplot(payGapData %>%
+                            filter(year == "2019/20") %>%
+                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank(),
+         legend.position = "none"
+  )
+
+top2019 <- ggplot(payGapData %>%
+                    filter(year == "2019/20") %>%
+                    filter(is.na(FemaleTopQuartile) == FALSE)
+  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank()
+  )
+
+lower2020 <- ggplot(payGapData %>%
+                      filter(year == "2020/21") %>%
+                      filter(is.na(FemaleLowerQuartile) == FALSE)
+  , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  ylab("2020") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "none"
+  )
+
+lowerMiddle2020 <- ggplot(payGapData %>%
+                            filter(year == "2020/21") %>%
+                            filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme(
+    axis.title =element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "none"
+  )
+
+upperMiddle2020 <- ggplot(payGapData %>%
+                            filter(year == "2020/21") %>%
+                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank(),
+         legend.position = "none"
+  )
+
+top2020 <- ggplot(payGapData %>%
+                    filter(year == "2020/21") %>%
+                    filter(is.na(FemaleTopQuartile) == FALSE)
+  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+  )) +
+  geom_point(alpha=0.3) +
+  ylim(yLowerBound, yUpperBound) +
+  theme( axis.title=element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank()
+  )
+
+grid.arrange(lower2017, lowerMiddle2017, upperMiddle2017, top2017, lower2018, lowerMiddle2018, upperMiddle2018, top2018, lower2019, lowerMiddle2019, upperMiddle2019, top2019, lower2020, lowerMiddle2020, upperMiddle2020, top2020, ncol = 4, widths = c(1.2,1,1, 1.7))
+```
+
+The plots show that females are over-represented in the lower and middle quartiles and under-represented in the top quartile.  There also appears to be possible differences between institutions which may be worth performing further analysis upon.
 
 ## Data Sources
 Data was obtained from two sources:
