@@ -1,10 +1,10 @@
 ---
 title: "Case Study 1 - University Gender Pay Gap"
-author: "Leanne Allen, Benjamin Bray, Nadiia Korchynska, Stephen Wotton"
+author: "Group 5: Leanne Allen, Benjamin Bray, Nadiia Korchynska, Stephen Wotton"
 date: "1/11/2021"
 output:
 html_document:
-  theme: yeti
+theme: yeti
 ---
 
 
@@ -25,16 +25,16 @@ pay20 <- read_csv("../data/UK Gender Pay Gap Data - 2020 to 2021.csv")
 universities <- read_csv("../data/universities.csv")
 
 pay17year <- pay17 %>%
-  mutate(year = "2017/18")
+        mutate(year = "2017/18")
 
 pay18year <- pay18 %>%
-  mutate(year = "2018/19")
+        mutate(year = "2018/19")
 
 pay19year <- pay19 %>%
-  mutate(year = "2019/20")
+        mutate(year = "2019/20")
 
 pay20year <- pay20 %>%
-  mutate(year = "2020/21")
+        mutate(year = "2020/21")
 
 mergedPayGapData <- rbind(pay17year, pay18year, pay19year, pay20year)
 
@@ -43,8 +43,8 @@ mergedPayGapData <- rbind(pay17year, pay18year, pay19year, pay20year)
 # we are told so must change to join on ID
 universitiesWithEmployerNameInitialMatch <- inner_join(universities, mergedPayGapData, by="EmployerName")
 universityEmployersById <-  universitiesWithEmployerNameInitialMatch %>%
-  select(EmployerId, EmployerName) %>%
-  distinct()
+        select(EmployerId, EmployerName) %>%
+        distinct()
 
 # We join on name, find the id from the name then join by id which will
 # return only the employers of interest in a consitent manner i.e. universities
@@ -52,20 +52,20 @@ universityEmployersById <-  universitiesWithEmployerNameInitialMatch %>%
 # Resolve names from join renaming the column from the universities file and
 # dropping the other with select(-starts_with....) which returns all but that column
 payGapDataAllUniversities <- inner_join(universities, universityEmployersById, by="EmployerName") %>%
-  inner_join(mergedPayGapData, by="EmployerId") %>%
-  rename("EmployerName"=EmployerName.x) %>%
-  select(-starts_with("EmployerName.y"))
+        inner_join(mergedPayGapData, by="EmployerId") %>%
+        rename("EmployerName"=EmployerName.x) %>%
+        select(-starts_with("EmployerName.y"))
 
 # Find the universities which have full result sets for the years of interest i.e. 4 years data
 # Note there are 89 universities with full set of data for 4 years, therefore we need 89*4 = 356 rows
 # previously we were only showing 321 rows
 payGapData <- aggregate(payGapDataAllUniversities$EmployerId,
                         by=list(payGapDataAllUniversities$EmployerId, payGapDataAllUniversities$institution), FUN=length) %>%
-  select(EmployerId=Group.1,institution=Group.2, Count=x  ) %>%
-  filter(Count == 4) %>%
-  inner_join(payGapDataAllUniversities, by="EmployerId") %>%
-  rename("institution"=institution.x) %>%
-  select(-starts_with("institution.y"))
+        select(EmployerId=Group.1,institution=Group.2, Count=x  ) %>%
+        filter(Count == 4) %>%
+        inner_join(payGapDataAllUniversities, by="EmployerId") %>%
+        rename("institution"=institution.x) %>%
+        select(-starts_with("institution.y"))
 
 
 ```
@@ -73,133 +73,123 @@ payGapData <- aggregate(payGapDataAllUniversities$EmployerId,
 
 ```{r analysis_diff_median, include=FALSE, echo = FALSE}
 payGapData %>%
-  select(EmployerName, year, DiffMedianHourlyPercent) %>%
-  pivot_wider(names_from = year,
-              values_from = DiffMedianHourlyPercent) %>%
-  na.omit()
+        select(EmployerName, year, DiffMedianHourlyPercent) %>%
+        pivot_wider(names_from = year,
+                    values_from = DiffMedianHourlyPercent) %>%
+        na.omit()
 ```
 
-## Table #1
+The universities were grouped by post and pre 92 institutions and their records were assessed over the 4-year time period.
+
+## Hourly Pay Overview
+
+
+
+
+
+### Average Difference in Mean Hourly Percentage
 
 ```{r analysis_paygap, echo = FALSE}
 
 hourly<-payGapData %>%
-  group_by(year, institution) %>%
-  summarise(meanGap = mean(DiffMedianHourlyPercent), .groups = "drop") %>%
-  pivot_wider(names_from = institution, values_from = meanGap)
-knitr::kable(hourly, digits = 2, align = "cc", col.names = c("Year", "Post-92", "Pre-92"))
+        group_by(year, institution) %>%
+        summarise(meanGap = mean(DiffMeanHourlyPercent), .groups = "drop") %>%
+        pivot_wider(names_from = institution, values_from = meanGap)
+knitr::kable(hourly, digits = 2, align = "cc", col.names = c("Year", "Post-92 (%)", "Pre-92 (%)"))
 
 payGapDataLong <- payGapData %>%
-  pivot_longer(DiffMeanHourlyPercent:FemaleTopQuartile,
-               names_to = "payGapMeasure",
-               values_to = "value") %>%
-  select(EmployerName, year, payGapMeasure, value, institution)
+        pivot_longer(DiffMeanHourlyPercent:FemaleTopQuartile,
+                     names_to = "payGapMeasure",
+                     values_to = "value") %>%
+        select(EmployerName, year, payGapMeasure, value, institution)
 
 ```
 
 
-
-## Table #2 - Average Median Gender Percentage Difference For Hourly Wage
-
+### Average Difference in the Median Hourly Percent
 ```{r analysis_percent_difference, echo = FALSE, message=FALSE}
-hourly<-payGapData %>%
-  group_by(year) %>%
-  summarise(meanGap = mean(DiffMedianHourlyPercent))
-knitr::kable(hourly, col.names = c("Year", "Percentage Difference"), digits = 2, align = "cc")
+hourlymed<-payGapData %>%
+        group_by(year, institution) %>%
+        summarise(meanGap = mean(DiffMedianHourlyPercent), .groups = "drop") %>%
+        pivot_wider(names_from = institution, values_from = meanGap)
+knitr::kable(hourlymed, digits = 2, align = "cc", col.names = c("Year", "Post-92 (%)", "Pre-92 (%)"))
 ```
 
 
-## Plot #1 - Pre-92 and Post-92 Universities Average Gender Difference Bonus Percentages
+The average gender difference percentage in mean hourly pay and median hourly pay demonstrates a difference in post-92 and pre-92 institutions. There are consistently higher gender gap wage percentages in Pre-92 universities. Over the past 4 years, the mean and median gender gap percentages for both institution types have decreased.
+
+### Hourly Pay Quantile Overview
 
 
-```{r analysis_bonus, fig.align = 'center', fig.cap = "PlotAcross all four years of data, it is consistent that Pre-92 universities have a higher percentage gap in the mean percentages of bonuses close to 50% or above, whereas Post-92 universities remain with a gap < 25%. The source of the data is from... ", out.width = "75%", , message=FALSE, warning = FALSE}
-
-
-payGapData%>%
-  filter(is.na(DiffMeanBonusPercent) == FALSE) %>%
-  ggplot(aes(y= DiffMeanBonusPercent, x = institution))+geom_boxplot()+facet_grid(cols = vars(year)) + labs(y = "Average Gender Difference of Bonus Percentages", x = "") + theme_minimal()+theme(strip.background = element_rect(fill="#FC4E07" ))+ scale_x_discrete(breaks = c("post-92", "pre-92"), labels =c( "Post-92", "Pre-92"))
-
-```
-### Data inconsistencies
-
-Note that there were thirty-six rows of data which did not have the column `DiffMeanBonusPercent` defined hence we have excluded those results.  These were from seventeen different universities:
-
-|Number of Universities Missing Data Values|Number of Rows of Missing Values|
-|:----------------:|:----------------:|
-|5|1|
-|6|2|
-|5|3|
-|1|4|
-Total Universities: 17 | Total Rows: 36|
-
-
-## Plot #2 - Hourly Pay Overview
-
-```{r analysis_hourly_pay_quartiles, fig.align = 'center', fig.cap = "Although the trend is gradually decreasing, males dominate in the top hourly pay. Females dominate in the lower 3 quartiles of hourly pay with a trend: as pay increases the % of females in the corresponding quartile decreases. This trend is apparent across both categories of institutions, although it is more pronounced in the pre-92 group where males comprised 58.6% of the top quartile in the pre-92 group in 2020/21 compared to 51.1% in the post-92 group. This might be partially explained by there being a greater proportion of males in the pre-92 group in general compared to the post-92 group (45.6% are males in the pre-92 group vs 42.1% in the post-92 group).", out.width = "75%", fig.height = 6 , message=FALSE, warning = FALSE}
+```{r analysis_hourly_pay_quartiles, fig.align = 'center', fig.cap = "Plot 1. Although the trend is gradually decreasing, males dominate in the top hourly pay. Females dominate in the lower 3 quartiles of hourly pay with a trend: as pay increases the % of females in the corresponding quartile decreases. This trend is apparent across both categories of institutions, although it is more pronounced in the pre-92 group where males comprised 58.6% of the top quartile in the pre-92 group in 2020/21 compared to 51.1% in the post-92 group. This might be partially explained by there being a greater proportion of males in the pre-92 group in general compared to the post-92 group (45.6% are males in the pre-92 group vs 42.1% in the post-92 group).", out.width = "75%", fig.height = 6 , message=FALSE, warning = FALSE}
 
 ## reshaping data. Grouping by year and institution type, taking mean from all the quartiles and rounding it up.
 df2 <- select(payGapData, institution, year, MaleLowerQuartile ,FemaleLowerQuartile,
               MaleLowerMiddleQuartile,  FemaleLowerMiddleQuartile, MaleUpperMiddleQuartile,
               FemaleUpperMiddleQuartile, MaleTopQuartile,FemaleTopQuartile) %>%
-  group_by(institution , year) %>%
-  summarise(mean_MaleLowerQuartile = (round( mean(MaleLowerQuartile), digits = 1)) ,
-            mean_FemaleLowerQuartile = round(mean(FemaleLowerQuartile), digits = 1),
-            mean_MaleLowerMiddleQuartile = round(mean(MaleLowerMiddleQuartile), digits = 1),
-            mean_FemaleLowerMiddleQuartile = round(mean(FemaleLowerMiddleQuartile), digits = 1),
-            mean_MaleUpperMiddleQuartile = round(mean(MaleUpperMiddleQuartile), digits = 1),
-            mean_FemaleUpperMiddleQuartile = round(mean(FemaleUpperMiddleQuartile), digits = 1),
-            mean_MaleTopQuartile = round(mean(MaleTopQuartile), digits = 1),
-            mean_FemaleTopQuartile = round(mean(FemaleTopQuartile), digits = 1))
+        group_by(institution , year) %>%
+        summarise(mean_MaleLowerQuartile = (round( mean(MaleLowerQuartile), digits = 1)) ,
+                  mean_FemaleLowerQuartile = round(mean(FemaleLowerQuartile), digits = 1),
+                  mean_MaleLowerMiddleQuartile = round(mean(MaleLowerMiddleQuartile), digits = 1),
+                  mean_FemaleLowerMiddleQuartile = round(mean(FemaleLowerMiddleQuartile), digits = 1),
+                  mean_MaleUpperMiddleQuartile = round(mean(MaleUpperMiddleQuartile), digits = 1),
+                  mean_FemaleUpperMiddleQuartile = round(mean(FemaleUpperMiddleQuartile), digits = 1),
+                  mean_MaleTopQuartile = round(mean(MaleTopQuartile), digits = 1),
+                  mean_FemaleTopQuartile = round(mean(FemaleTopQuartile), digits = 1))
 
 # pivoting data so that all the values appear in one column
 df_for_plot <- pivot_longer(df2,
                             cols = -c('institution','year'),
                             names_to = 'gender_quartile',
                             values_to = 'mean') %>%
-  mutate(gender = case_when(grepl("Male", gender_quartile) ~ "Male",
-                            grepl("Female", gender_quartile) ~"Female")) %>%
-  mutate(quartile = case_when(grepl("Male", gender_quartile) ~ gsub("mean_Male","",gender_quartile),
-                              grepl("Female", gender_quartile) ~ gsub("mean_Female","",gender_quartile)))
+        mutate(gender = case_when(grepl("Male", gender_quartile) ~ "Male",
+                                  grepl("Female", gender_quartile) ~"Female")) %>%
+        mutate(quartile = case_when(grepl("Male", gender_quartile) ~ gsub("mean_Male","",gender_quartile),
+                                    grepl("Female", gender_quartile) ~ gsub("mean_Female","",gender_quartile)))
 
 #turning quartiles to factors to force their order in the graph
 df_for_plot$quartile <- factor(df_for_plot$quartile, levels=c('TopQuartile','UpperMiddleQuartile','LowerMiddleQuartile','LowerQuartile'))
 
 p2 <- ggplot(df_for_plot, aes(x = year, y = mean, fill = gender)) +
-  geom_col(position = 'stack') +
-  facet_grid( quartile ~ institution) +
-  geom_text(aes(label = mean), size = 3, hjust = 0.5, vjust = 3, position =     "stack") +
-  labs(x = "Year", y= "Hourly pay per gender %")
+        geom_col(position = 'stack') +
+        facet_grid( quartile ~ institution) +
+        geom_text(aes(label = mean), size = 3, hjust = 0.5, vjust = 3, position =     "stack") +
+        labs(x = "Year", y= "Hourly pay per gender %")
 p2
 
-#Plot 3 - Grouping by Post and Pre 92 institutions and assessing their records over the time period
 
+```
+
+### Mean of Percent Differences in Median Hourly Pay
+#### By type of University Institution
+
+```{r, message=FALSE, fig.align='center'}
 p92 <- payGapDataAllUniversities %>% group_by(institution, year) %>%
-  summarise(mean_pct_diff = mean(DiffMedianHourlyPercent))
+        summarise(mean_pct_diff = mean(DiffMedianHourlyPercent))
 
 ggplot(data = p92,
        aes(x = year, y = mean_pct_diff, group = institution,
            colour = institution)) +
-  geom_point() +
-  labs(x = "Year",
-       y = "Mean % Difference (Median Hourly Pay)",
-       title = "Mean of percent differences in median hourly pay",
-       subtitle = 'By type of University Institution') +
-  geom_line() +
-  ylim(0,20)
-
+        geom_point() +
+        labs(x = "Year",
+             y = "Mean % Difference (Median Hourly Pay)") +
+        geom_line() +
+        ylim(0,20)
 
 ```
-## Plot #3 Scatter graphs of percentage of females within quartile data
-```{r scatter_graphs}
+
+
+### Scatter graphs of percentage of females within quartile hourly pay data
+```{r scatter_graphs, fig.align='center'}
 
 yLowerBound <- 20
 yUpperBound <- 85
 yMidpoint = (yUpperBound-yLowerBound)/2
 lower2017 <- ggplot(payGapData %>%
-        filter(year == "2017/18") %>%
-        filter(is.na(FemaleLowerQuartile) == FALSE)
+                            filter(year == "2017/18") %>%
+                            filter(is.na(FemaleLowerQuartile) == FALSE)
         , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
-              )) +
+        )) +
         geom_point(alpha=0.3) +
         ylim(yLowerBound, yUpperBound) +
         ylab("2017") +
@@ -212,213 +202,256 @@ lower2017 <- ggplot(payGapData %>%
         labs(x="2017", y="2017", title = "Lower")
 
 lowerMiddle2017 <- ggplot(payGapData %>%
-                   filter(year == "2017/18") %>%
-                   filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
-  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme(
-        axis.title =element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        legend.position = "none",
-        plot.title = element_text(hjust = 0.5)
-  ) +
-  labs(x="", y="", title = "Lower Middle")
+                                  filter(year == "2017/18") %>%
+                                  filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+        , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme(
+                axis.title =element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank(),
+                legend.position = "none",
+                plot.title = element_text(hjust = 0.5)
+        ) +
+        labs(x="", y="", title = "Lower Middle")
 
 upperMiddle2017 <- ggplot(payGapData %>%
-                            filter(year == "2017/18") %>%
-                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
-  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank(),
-        legend.position = "none",
-         plot.title = element_text(hjust = 0.5)
-  ) +
-  labs(x="", y="", title = "Upper Middle")
+                                  filter(year == "2017/18") %>%
+                                  filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+        , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank(),
+               legend.position = "none",
+               plot.title = element_text(hjust = 0.5)
+        ) +
+        labs(x="", y="", title = "Upper Middle")
 
 top2017 <- ggplot(payGapData %>%
-                            filter(year == "2017/18") %>%
-                            filter(is.na(FemaleTopQuartile) == FALSE)
-  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank(),
-         plot.title = element_text(hjust = 0.5)
-  ) +
-  labs(x="", y="", title = "Top")
+                          filter(year == "2017/18") %>%
+                          filter(is.na(FemaleTopQuartile) == FALSE)
+        , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank(),
+               plot.title = element_text(hjust = 0.5)
+        ) +
+        labs(x="", y="", title = "Top")
 
 lower2018 <- ggplot(payGapData %>%
-                      filter(year == "2018/19") %>%
-                      filter(is.na(FemaleLowerQuartile) == FALSE)
-  , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  ylab("2018") +
-  theme(axis.title.x=element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        legend.position = "none"
-  )
+                            filter(year == "2018/19") %>%
+                            filter(is.na(FemaleLowerQuartile) == FALSE)
+        , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        ylab("2018") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              legend.position = "none"
+        )
 
 lowerMiddle2018 <- ggplot(payGapData %>%
-                            filter(year == "2018/19") %>%
-                            filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
-  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme(
-    axis.title =element_blank(),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    legend.position = "none"
-  )
+                                  filter(year == "2018/19") %>%
+                                  filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+        , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme(
+                axis.title =element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank(),
+                legend.position = "none"
+        )
 
 upperMiddle2018 <- ggplot(payGapData %>%
-                            filter(year == "2018/19") %>%
-                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
-  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank(),
-         legend.position = "none"
-  )
+                                  filter(year == "2018/19") %>%
+                                  filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+        , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank(),
+               legend.position = "none"
+        )
 
 top2018 <- ggplot(payGapData %>%
-                    filter(year == "2018/19") %>%
-                    filter(is.na(FemaleTopQuartile) == FALSE)
-  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank()
-  )
+                          filter(year == "2018/19") %>%
+                          filter(is.na(FemaleTopQuartile) == FALSE)
+        , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank()
+        )
 
 lower2019 <- ggplot(payGapData %>%
-                      filter(year == "2019/20") %>%
-                      filter(is.na(FemaleLowerQuartile) == FALSE)
-  , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  ylab("2019") +
-  theme(axis.title.x=element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        legend.position = "none"
-  )
+                            filter(year == "2019/20") %>%
+                            filter(is.na(FemaleLowerQuartile) == FALSE)
+        , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        ylab("2019") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              legend.position = "none"
+        )
 
 lowerMiddle2019 <- ggplot(payGapData %>%
-                            filter(year == "2019/20") %>%
-                            filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
-  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme(
-    axis.title =element_blank(),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    legend.position = "none"
-  )
+                                  filter(year == "2019/20") %>%
+                                  filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+        , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme(
+                axis.title =element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank(),
+                legend.position = "none"
+        )
 
 upperMiddle2019 <- ggplot(payGapData %>%
-                            filter(year == "2019/20") %>%
-                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
-  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank(),
-         legend.position = "none"
-  )
+                                  filter(year == "2019/20") %>%
+                                  filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+        , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank(),
+               legend.position = "none"
+        )
 
 top2019 <- ggplot(payGapData %>%
-                    filter(year == "2019/20") %>%
-                    filter(is.na(FemaleTopQuartile) == FALSE)
-  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank()
-  )
+                          filter(year == "2019/20") %>%
+                          filter(is.na(FemaleTopQuartile) == FALSE)
+        , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank()
+        )
 
 lower2020 <- ggplot(payGapData %>%
-                      filter(year == "2020/21") %>%
-                      filter(is.na(FemaleLowerQuartile) == FALSE)
-  , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  ylab("2020") +
-  theme(axis.title.x=element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        legend.position = "none"
-  )
+                            filter(year == "2020/21") %>%
+                            filter(is.na(FemaleLowerQuartile) == FALSE)
+        , aes(y=FemaleLowerQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        ylab("2020") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              legend.position = "none"
+        )
 
 lowerMiddle2020 <- ggplot(payGapData %>%
-                            filter(year == "2020/21") %>%
-                            filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
-  , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme(
-    axis.title =element_blank(),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    legend.position = "none"
-  )
+                                  filter(year == "2020/21") %>%
+                                  filter(is.na(FemaleLowerMiddleQuartile) == FALSE)
+        , aes(y=FemaleLowerMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme(
+                axis.title =element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank(),
+                legend.position = "none"
+        )
 
 upperMiddle2020 <- ggplot(payGapData %>%
-                            filter(year == "2020/21") %>%
-                            filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
-  , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank(),
-         legend.position = "none"
-  )
+                                  filter(year == "2020/21") %>%
+                                  filter(is.na(FemaleUpperMiddleQuartile) == FALSE)
+        , aes(y=FemaleUpperMiddleQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank(),
+               legend.position = "none"
+        )
 
 top2020 <- ggplot(payGapData %>%
-                    filter(year == "2020/21") %>%
-                    filter(is.na(FemaleTopQuartile) == FALSE)
-  , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
-  )) +
-  geom_point(alpha=0.3) +
-  ylim(yLowerBound, yUpperBound) +
-  theme( axis.title=element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank()
-  )
+                          filter(year == "2020/21") %>%
+                          filter(is.na(FemaleTopQuartile) == FALSE)
+        , aes(y=FemaleTopQuartile, x=institution, color=institution, shape=institution
+        )) +
+        geom_point(alpha=0.3) +
+        ylim(yLowerBound, yUpperBound) +
+        theme( axis.title=element_blank(),
+               axis.text = element_blank(),
+               axis.ticks = element_blank()
+        )
 
 grid.arrange(lower2017, lowerMiddle2017, upperMiddle2017, top2017, lower2018, lowerMiddle2018, upperMiddle2018, top2018, lower2019, lowerMiddle2019, upperMiddle2019, top2019, lower2020, lowerMiddle2020, upperMiddle2020, top2020, ncol = 4, widths = c(1.2,1,1, 1.7))
 ```
 
-The plots show that females are over-represented in the lower and middle quartiles and under-represented in the top quartile.  There also appears to be possible differences between institutions which may be worth performing further analysis upon.
+Plot 2. Plot 3. The plots show that females are over-represented in the lower and middle quartiles and under-represented in the top quartile.  There also appears to be possible differences between institutions which may be worth performing further analysis upon.
+
+
+---
+## Bonus Pay Overview
+
+### Average Gender Bonus Pay Percent
+
+```{r analysis_bonus1, echo = FALSE, message=FALSE}
+bonhourly<-payGapData %>%
+        group_by(year) %>%
+        summarise(meanmale = mean(MaleBonusPercent), meanfemale=mean(FemaleBonusPercent), .groups = "drop")
+#Find out how many reported zero
+#47 male bonus
+#57 female bonus
+#table(payGapData$MaleBonusPercent)
+#table(payGapData$FemaleBonusPercent)
+
+#find range of values for medians
+#summary (payGapData$MaleBonusPercent)
+#summary (payGapData$FemaleBonusPercent)
+
+knitr::kable(bonhourly, col.names = c("Year", "Mean Male (%)", "Mean Female (%)"), digits = 2, align = "ccc")
+
+```
+
+The bonus pay by gender was averaged for each year from reported universities and demonstrates that male and females are similar. This data also include universities who did not provide bonus pay and therefore reported a zero (57 for female and 47 for male). The maximum male bonus percent was 80.8 and the maximum female bonus percent was 87.6.
+
+
+
+### Pre-92 and Post-92 Universities Mean Bonus Pay Gender Difference Percentage
+
+
+```{r analysis_bonus, fig.align = 'center', fig.cap = " Plot 4. Pre-92 and Post-92 Universities Mean Bonus Pay Gender Difference Percentage. It is consistent that Pre-92 universities have a higher percentage gap in the mean percentages of bonuses close to 50% or above, whereas Post-92 universities remain with a gap < 25%. The source of the data is described at the end of this page. ", out.width = "75%", , message=FALSE, warning = FALSE}
+
+
+payGapData%>%
+        filter(is.na(DiffMeanBonusPercent) == FALSE) %>%
+        ggplot(aes(y= DiffMeanBonusPercent, x = institution, fill = "" ))+geom_boxplot()+facet_grid(cols = vars(year)) + labs(y = "Average Gender Difference of Bonus Percentages", x = "") + theme_minimal()+theme(strip.background = element_rect(fill = "light blue"))+ scale_x_discrete(breaks = c("post-92", "pre-92"), labels =c( "Post-92", "Pre-92"))+ theme(legend.position = "none")
+
+
+```
+
+
 
 ## Data Sources
 Data was obtained from two sources:
@@ -439,3 +472,23 @@ It should be noted that twenty-seven Universities changed their employer name  t
 In data submitted for 2021/22 when the data was downloaded it contained only two universities; thus this year was excluded as the dataset was incomplete.
 
 Of the ninety-six universities within the datasets only ninety universities had data spanning all fours years of interest, namely: 2017/18, 2018/19, 2019/20, 2020/21.
+
+### Data inconsistencies
+
+Note that there were thirty-six rows of data which did not have the column `DiffMeanBonusPercent` defined hence we have excluded those results.  These were from seventeen different universities:
+
+|Number of Universities Missing Data Values|Number of Rows of Missing Values|
+|:----------------:|:----------------:|
+|5|1|
+|6|2|
+|5|3|
+|1|4|
+Total Universities: 17 | Total Rows: 36|
+
+
+
+
+
+
+
+
