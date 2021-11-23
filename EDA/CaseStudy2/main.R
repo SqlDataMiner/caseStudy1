@@ -25,14 +25,14 @@ formatWeatherStationNameForDownload <- function (weatherStationName) {
 # this returns a vector of results from an expected numeric element to parse.
 # the vector returned is: c(value, isEstimate, wasSunMeasuredUsingCambellStokesRecorder)
 # the behaviour is:
-#    (1) if the data is missing then all elements are null
+#    (1) if the data is missing then all elements are NA (for null vs NA see: https://www.r-bloggers.com/2010/04/r-na-vs-null/)
+#         NA can be coerced into a type and null can not; hence we must use NA
 #    (2) if the data is not missing and is marked with a # then wasSunMeasuredUsingCambellStokesRecorder=True
 #           else wasSunMeasuredUsingCambellStokesRecorder=FALSE
 #    (3) if the data is not missing and is marked with a * then isEstimate=TRUE else isEstimate=False
 parseExpectedNumericDataElement <- function(element) {
   if(element == '---') {
-    #TODO HOW DO WE SET NULLS IN OUR CLASS
-    result <- new("dataElement", value = 0, isEstimate = FALSE, wasSunMeasuredUsingCambellStokesRecorder = FALSE)
+    result <- new("dataElement", value = NA_real_, isEstimate = NA, wasSunMeasuredUsingCambellStokesRecorder = NA)
   } else {
     isEstimate <-  grepl("*", element, fixed=TRUE)
     wasSunMeasuredUsingCambellStokesRecorder <- grepl("#", element, fixed =TRUE)
