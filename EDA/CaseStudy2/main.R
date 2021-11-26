@@ -1,7 +1,7 @@
 library(dplyr)
 library(tidyverse)
 
-# Class Definitions
+# *** Class Definitions ***
 # A class to hold each weather stations data
 setClass("weatherStationData", slots=list(name="character", aboveMeanSeaLevelMeters="numeric",
                                           easterly="character", northerly="character",
@@ -14,7 +14,7 @@ setClass("dataElement", slots=list(value="numeric", isEstimate="logical",
 # A class representing the download information for a weatherstation
 setClass("downloadInfo", slots=list(url="character", fileName="character"))
 
-# Function Definitions
+# *** Function Definitions ***
 #downloads the data for a given weatherstation name
 downloadData <- function(weatherStationName){
   downloadInfo <- createDownloadInfo(weatherStationName)
@@ -155,9 +155,7 @@ parseWeatherStationData <- function(fileName) {
 
 }
 
-# The main program which runs the data processing
-main <- function(){
-}
+# *** The program which runs the data processing ***
 # The list of weather stations, will format on processing to make extending the list less error prone.
 weatherStations <- c('Sheffield', 'Yeovilton', 'Durham', 'Heathrow', 'Newton Rigg',
                      'Cambridge', 'Bradford', 'Oxford', 'Suttonbonington', 'Waddington', 'Manston', 'Shawbury', 'Ross-on-Wye')
@@ -171,6 +169,9 @@ filesToProcess <- list.files(path="data", full.names=TRUE, pattern="^(.*)data.tx
 #parse the data.
 weatherStationDataList <- lapply(filesToProcess, parseWeatherStationData)
 
-#union all the data together
+#create a list of dataframes which will allow us to create a unified dataset
+dataTables <- lapply(weatherStationDataList, function(station){station@data})
 
-#run the program
+#union all the dataframes together using merge function
+unifiedWeatherDataSet <-  Reduce(function(x,y) {merge(x,y, all=TRUE)}, dataTables)
+
