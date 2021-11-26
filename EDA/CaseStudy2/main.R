@@ -2,28 +2,34 @@ library(dplyr)
 library(tidyverse)
 
 # Class Definitions
+# A class to hold each weather stations data
 setClass("weatherStationData", slots=list(name="character", aboveMeanSeaLevelMeters="numeric",
                                           easterly="character", northerly="character",
                                           lat="numeric", lon="numeric", data="data.frame"))
 
+# A class representing the result of a parsed element
 setClass("dataElement", slots=list(value="numeric", isEstimate="logical",
                                    wasSunMeasuredUsingCambellStokesRecorder="logical"))
 
-# Function Definitions
-downloadData <- function(weatherStationName){
-  downloadVector <- createDownloadVector(weatherStationName)
-  url <- downloadVector[1]
-  fileName <- downloadVector[2]
+# A class representing the download information for a weatherstation
+setClass("downloadInfo", slots=list(url="character", fileName="character"))
 
-  download.file(url, str_glue("data/{fileName}"))
+# Function Definitions
+#downloads the data for a given weatherstation name
+downloadData <- function(weatherStationName){
+  downloadInfo <- createDownloadInfo(weatherStationName)
+  download.file(downloadInfo@url, str_glue("data/{downloadInfo@fileName}"))
 }
 
+# Strips non-alpha chars out of name and makes lower case.
+# Doing this allows us to take more names from user and not have
+# to pre-format them which just risks us making a mistake
 formatWeatherStationNameForDownload <- function (weatherStationName) {
   str_replace_all(tolower(weatherStationName), '[^[:alpha:]]', '')
 }
 
-# this returns a vector of results from an expected numeric element to parse.
-# the vector returned is: c(value, isEstimate, wasSunMeasuredUsingCambellStokesRecorder)
+# This returns a object from an expected numeric element to parse.
+# We should never lose information at the parsing stage
 # the behaviour is:
 #    (1) if the data is missing then all elements are NA (for null vs NA see: https://www.r-bloggers.com/2010/04/r-na-vs-null/)
 #         NA can be coerced into a type and null can not; hence we must use NA
@@ -43,17 +49,20 @@ parseExpectedNumericDataElement <- function(element) {
   result
 }
 
-# Returns a vector which has the url as first element and filename as second element then
-# we can use this in download function to specify where to download from and the filename to download to.
-createDownloadVector <- function (weatherStationName) {
+# download function to specify where to download from and the filename to download to.
+createDownloadInfo <- function (weatherStationName) {
   weatherStationsDownloadName <- formatWeatherStationNameForDownload(weatherStationName)
   fileName <- str_glue("{weatherStationsDownloadName}data.txt")
-  c(str_glue("https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/{fileName}"), fileName)
+   new("downloadInfo", url=str_glue("https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/{fileName}"), fileName=fileName)
 }
 
 # Reads in a file and parse the data to create an instance of weatherStationData (which is defined by the class)
-# Note not the most efficent file read is memory intensive byecause we read all the file in in one go
-# but this is a small dataset so no point optomising
+# The file is creatly whitespace seperated and to parse so that we do not lose the estimated values or the sun measuring instrumentation
+# we either need to:
+#   1) use a regex which can match numbers and the indicators (i.e. '#' and '*') then parse the result using further regexs.
+#   2) Split on whitespace, select by ordinal and parse
+#  Both work and commerically you would have tests on input rejecting abnormal file formats/or saving for investigation deponding on application.
+# We have chosen approach two.
 parseWeatherStationData <- function(fileName) {
   # we need to create a file "Handle" which allows the program to read the file
   # we specify open="r" to say we want to only read the file
@@ -79,6 +88,9 @@ parseWeatherStationData <- function(fileName) {
   # 3) create a data table
   numberOfHeaderlines <- 7
   vectorLength <- length(lines) - numberOfHeaderlines
+  locationName <- rep(name, times=vectorLength-1)
+  latitude <- rep(lat, times=vectorLength-1)
+  longatude <- rep(lon, times=vectorLength-1)
   years <- c(vectorLength)
   months <-c(vectorLength)
   maxTemp <- c(vectorLength)
@@ -94,12 +106,15 @@ parseWeatherStationData <- function(fileName) {
   wasSunEstimated <- c(vectorLength)
   isProvisionalRecord <- c(vectorLength)
 
+  # ignore header rows and loop over lines in file
+  # for each line parse assigning each of the constituent elements value to it's vector ordinal
   startAtLine <- numberOfHeaderlines + 1
   for ( i in startAtLine:length(lines)) {
     currentLine <- lines[i]
-    #split line on whitespace
+    #split line on whitespace but leaves a starting empty string
     lineVector <- unlist(strsplit(currentLine, split="\\s+"))
-    #TODO YEAR DATA IS NOT SET CORRECT AND NOR IS BOOLEAN
+    # remove empty string which the split produces
+    lineVector <- lineVector[lineVector != ""]
     years[i - startAtLine] <-  lineVector[1]
     months[i - startAtLine] <-  lineVector[2]
     tempMax <- parseExpectedNumericDataElement(lineVector[3])
@@ -123,7 +138,8 @@ parseWeatherStationData <- function(fileName) {
   }
 
 #name columns with scales
-  dataFrame <- data.frame(years=years, months=months, maxTempDegreesC=maxTemp,
+  dataFrame <- data.frame(name=locationName, lat=latitude, lon=longatude,
+                          years=years, months=months, maxTempDegreesC=maxTemp,
                           wasMaxTempEstimated=wasMaxTempEstimated, minTempDegreesC=minTemp,
                           wasMinTempEstimated=wasMinTempEstimated, airFrostDays=airFrost,
                           wasAirFrostEstimated=wasAirFrostEstimated, rainfallmm=rainfall,
@@ -139,7 +155,10 @@ parseWeatherStationData <- function(fileName) {
 
 }
 
-# The program
+# The main program which runs the data processing
+main <- function(){
+}
+# The list of weather stations, will format on processing to make extending the list less error prone.
 weatherStations <- c('Sheffield', 'Yeovilton', 'Durham', 'Heathrow', 'Newton Rigg',
                      'Cambridge', 'Bradford', 'Oxford', 'Suttonbonington', 'Waddington', 'Manston', 'Shawbury', 'Ross-on-Wye')
 
@@ -149,5 +168,9 @@ downloads <- lapply(weatherStations, downloadData)
 #apply a file pattern in case we want to store other data in the folder later.
 filesToProcess <- list.files(path="data", full.names=TRUE, pattern="^(.*)data.txt$" )
 
-
+#parse the data.
 weatherStationDataList <- lapply(filesToProcess, parseWeatherStationData)
+
+#union all the data together
+
+#run the program
