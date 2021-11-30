@@ -1,4 +1,4 @@
-library(dplyr)
+library(shiny)
 library(tidyverse)
 
 # *** Class Definitions ***
@@ -115,8 +115,8 @@ parseWeatherStationData <- function(fileName) {
     lineVector <- unlist(strsplit(currentLine, split="\\s+"))
     # remove empty string which the split produces
     lineVector <- lineVector[lineVector != ""]
-    years[i - startAtLine] <-  lineVector[1]
-    months[i - startAtLine] <-  lineVector[2]
+    years[i - startAtLine] <-  as.numeric(lineVector[1])
+    months[i - startAtLine] <-  as.numeric(lineVector[2])
     tempMax <- parseExpectedNumericDataElement(lineVector[3])
     maxTemp[i - startAtLine] <-  tempMax@value
     wasMaxTempEstimated[i - startAtLine] <-  tempMax@isEstimate
@@ -172,6 +172,13 @@ weatherStationDataList <- lapply(filesToProcess, parseWeatherStationData)
 #create a list of dataframes which will allow us to create a unified dataset
 dataTables <- lapply(weatherStationDataList, function(station){station@data})
 
-#union all the dataframes together using merge function
-unifiedWeatherDataSet <-  Reduce(function(x,y) {merge(x,y, all=TRUE)}, dataTables)
+# seasons as defined by met office:   https://www.metoffice.gov.uk/weather/learn-about/met-office-for-schools/other-content/other-resources/our-seasons
+seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
+                               "summer", "summer", "summer", "autumn", "autumn",
+                               "autumn", "winter"), months=seq(1, 12, 1))
+#union all the dataframes together using merge function and add season to the rows.
+unifiedWeatherDataSet <-  Reduce(function(x,y) {merge(x,y, all=TRUE)}, dataTables) %>%
+                          inner_join(seasons, by="months")
+
+
 
