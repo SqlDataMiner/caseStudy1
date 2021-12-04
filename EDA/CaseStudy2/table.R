@@ -230,14 +230,15 @@ seasonalHeaderGenerate <- function(metric) {
 
 seasonalDescriptionGenerate <- function(metric) {
   #typical values will use mean to aggreate identical tests equality on our functions.
-  isTypicalValues <- identical(hashAgg[[metric]], mean)
+  isTypicalValues <- identical(metricDefinitions[[metric]]@aggregation, mean)
   if (isTypicalValues){
     s <- "Typical daily values for seasons of"
   }else{
     s <- "Total values for seasons of"
   }
-
-  str_glue("{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})")
+  url <- "https://www.metoffice.gov.uk/weather/learn-about/met-office-for-schools/other-content/other-resources/our-seasons"
+  t <- str_glue("The definition used for seasons is given by the met office at: <a href='{url}'>{url}</a>")
+  str_glue("{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})<br/>{t}")
 }
 seasonalSummaryGenerate <- function(data, metric,
                         yearFrom, yearTo){
@@ -260,7 +261,64 @@ seasonalSummaryGenerate <- function(data, metric,
   str_glue("{a}<br/>{b}<br/>{c}")
 }
 
+monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
+  data %>%
+    filter(years >= yearFrom) %>%
+    filter(years <= yearTo) %>%
+    group_by(name, monthNamesShort, years) %>%
+    summarise(typical=aggregationFunction(metric)(get(metric))) %>%
+    mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
+    pivot_wider(names_from=monthNamesShort, values_from=typical)%>%
+    arrange(name, years) %>%
+    relocate(Jan, .after=years) %>%
+    relocate(Feb, .after=Jan) %>%
+    relocate(Mar, .after=Feb) %>%
+    relocate(Apr, .after=Mar) %>%
+    relocate(May, .after=Apr) %>%
+    relocate(Jun, .after=May) %>%
+    relocate(Jul, .after=Jun) %>%
+    relocate(Aug, .after=Jul) %>%
+    relocate(Sep, .after=Aug) %>%
+    relocate(Oct, .after=Sep) %>%
+    relocate(Nov, .after=Oct) %>%
+    relocate(Dec, .after=Nov)
+}
 
+monthlyHeaderGenerate <- function(metric) {
+  str_glue("<h1>Monthly {metricDefinitions[[metric]]@metricName}</h1>")
+}
+
+monthlyDescriptionGenerate <- function(metric) {
+  #typical values will use mean to aggreate identical tests equality on our functions.
+  isTypicalValues <- identical(metricDefinitions[[metric]]@aggregation, mean)
+  if (isTypicalValues){
+    s <- "Typical daily values for months of"
+  }else{
+    s <- "Total values for months of"
+  }
+
+  str_glue("{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})")
+}
+monthlySummaryGenerate <- function(data, metric,
+                                    yearFrom, yearTo){
+  estimatedColumnName <- metricDefinitions[[metric]]@estimatedColumnName
+  minAdjective <- metricDefinitions[[metric]]@minimumAdjective
+  maxAdjective <- metricDefinitions[[metric]]@maximumAdjective
+  metricName <- metricDefinitions[[metric]]@metricName
+  scale <- metricDefinitions[[metric]]@scale
+
+  x <- data %>%
+    filter(years >= yearFrom) %>%
+    filter(years <= yearTo) %>%
+    summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
+              estimates=sum(get(estimatedColumnName), na.rm = TRUE))
+
+  #lets build up the sentences
+  a <- str_glue("The {minAdjective} value of {metricName} was {x$min} ({scale}).")
+  b <- str_glue("The {maxAdjective} value of {metricName} was {x$max} ({scale}).")
+  c <- str_glue("The number of estimated data values were {x$estimates}.")
+  str_glue("{a}<br/>{b}<br/>{c}")
+}
 
 #*** Data ***
 # The list of weather stations, will format on processing to make extending the list less error prone.
@@ -329,6 +387,11 @@ ui <- fluidPage(
                htmlOutput("seasonsDescription"),
                tableOutput("seasonsTable"),
                htmlOutput("seasonsSummary"),
+               htmlOutput("monthlyHeader"),
+               htmlOutput("monthlyDescription"),
+               tableOutput("monthlyTable"),
+               htmlOutput("monthlySummary")
+
       )
     )
   )
@@ -380,6 +443,10 @@ server <- function(input, output) {
     seasonalSummaryTable(unifiedWeatherDataSet, input$yearfrom, input$yearto, input$investigationMetric)
   })
 
+  monthlyTableGeneration <- reactive({
+    monthlySummaryTable(unifiedWeatherDataSet, input$yearfrom, input$yearto, input$investigationMetric)
+  })
+
   # update dropdowns with data required
   updateSelectInput(inputId = "yearfrom", choices = yearsOfInterest)
   updateSelectInput(inputId = "yearto", choices = yearsOfInterest)
@@ -390,11 +457,19 @@ server <- function(input, output) {
     generatePlot(input, unifiedWeatherDataSet)
   })
 
+  #create seasonal tabular data and commentry
   output$seasonsTable <- renderTable({ seasonTableGeneration() })
   output$seasonsHeader <-renderText({  seasonalHeaderGenerate(input$investigationMetric)  })
   output$seasonsDescription <- renderText({seasonalDescriptionGenerate(input$investigationMetric)})
   output$seasonsSummary <- renderText(seasonalSummaryGenerate(unifiedWeatherDataSet, input$investigationMetric,
                                                               input$yearfrom, input$yearto))
+
+  #create monthly tabular data and commentry
+  output$monthlyTable <- renderTable({monthlyTableGeneration()})
+  output$monthlyHeader <-renderText({monthlyHeaderGenerate(input$investigationMetric)})
+  output$monthlyDescription <- renderText({monthlyDescriptionGenerate(input$investigationMetric)})
+  output$monthlySummary <- renderText({monthlySummaryGenerate(unifiedWeatherDataSet, input$investigationMetric,
+                                                              input$yearfrom, input$yearto)})
 }
 # Run the application
 shinyApp(ui = ui, server = server)
