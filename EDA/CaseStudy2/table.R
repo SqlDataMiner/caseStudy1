@@ -185,20 +185,21 @@ generatePlot <- function(input, unifiedWeatherDataSet){
 
 # create a class for holding all the metric releated information
 setClass("metricDefinition", slots=list(metricName="character", aggregation="function", format="function",
-                                        scale="character", name="character",
-                                        minimumAdjective="character", maximumAdjective="character"))
+                                        scale="character", name="character",minimumAdjective="character",
+                                        maximumAdjective="character", estimatedColumnName="character"
+))
 # hash allows us to map from string to an object.  Saves us having to write branching statements (if else etc) everywhere.
 metricDefinitions <- hash()
 metricDefinitions[["rainfallmm"]] <- new("metricDefinition", metricName="rainfall", aggregation = mean, format= as.numeric, scale="mm",
-                               minimumAdjective="least", maximumAdjective="greatest")
-metricDefinitions[["maxTempDegreesC"]] <- new("metricDefinition", metricName="", aggregation = mean, format= as.numeric, scale="degrees celcius",
-                                              minimumAdjective="lowest", maximumAdjective="highest")
-metricDefinitions[["minTempDegreesC"]] <- new("metricDefinition", metricName="", aggregation = mean, format= as.numeric, scale="degrees celcius",
-                                              minimumAdjective="lowest", maximumAdjective="highest")
-metricDefinitions[["sunHours"]] <- new("metricDefinition", metricName="", aggregation = sum, format= as.numeric, scale="hours",
-                                       minimumAdjective="fewest", maximumAdjective="most")
-metricDefinitions[["airFrostDays"]] <-  new("metricDefinition", metricName="", aggregation = sum, format= as.integer, scale="days",
-                                            minimumAdjective="fewest", maximumAdjective="most")
+                               minimumAdjective="least", maximumAdjective="greatest", estimatedColumnName="wasRainfallEstimated")
+metricDefinitions[["maxTempDegreesC"]] <- new("metricDefinition", metricName="maximum temperature", aggregation = mean, format= as.numeric, scale="degrees celcius",
+                                              minimumAdjective="lowest", maximumAdjective="highest", estimatedColumnName="wasMaxTempEstimated")
+metricDefinitions[["minTempDegreesC"]] <- new("metricDefinition", metricName="minimum temperature", aggregation = mean, format= as.numeric, scale="degrees celcius",
+                                              minimumAdjective="lowest", maximumAdjective="highest", estimatedColumnName="wasMinTempEstimated")
+metricDefinitions[["sunHours"]] <- new("metricDefinition", metricName="daylight", aggregation = sum, format= as.numeric, scale="hours",
+                                       minimumAdjective="fewest", maximumAdjective="most", estimatedColumnName="wasSunEstimated")
+metricDefinitions[["airFrostDays"]] <-  new("metricDefinition", metricName="air frost", aggregation = sum, format= as.integer, scale="days",
+                                            minimumAdjective="fewest", maximumAdjective="most", estimatedColumnName="wasAirFrostEstimated")
 
 
 #decide on the appropriate aggregation function by metric
@@ -230,33 +231,33 @@ seasonalHeaderGenerate <- function(metric) {
 seasonalDescriptionGenerate <- function(metric) {
   #typical values will use mean to aggreate identical tests equality on our functions.
   isTypicalValues <- identical(hashAgg[[metric]], mean)
-  print(isTypicalValues)
   if (isTypicalValues){
     s <- "Typical daily values for seasons of"
   }else{
-    s <- "Total values for seasons of "
+    s <- "Total values for seasons of"
   }
 
   str_glue("{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})")
 }
 seasonalSummaryGenerate <- function(data, metric,
                         yearFrom, yearTo){
-  #find min
+  estimatedColumnName <- metricDefinitions[[metric]]@estimatedColumnName
+  minAdjective <- metricDefinitions[[metric]]@minimumAdjective
+  maxAdjective <- metricDefinitions[[metric]]@maximumAdjective
+  metricName <- metricDefinitions[[metric]]@metricName
+  scale <- metricDefinitions[[metric]]@scale
+
   x <- data %>%
     filter(years >= yearFrom) %>%
     filter(years <= yearTo) %>%
-    group_by(name, season, years) %>%
-    summarise(min=min(get(metric)), max=max(get(metric)))
-  # find max
+    summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
+              estimates=sum(get(estimatedColumnName), na.rm = TRUE))
 
-  #find how many data points were estimates
-  y <- data %>%
-    filter(years >= yearFrom) %>%
-    filter(years <= yearTo)
-
-
-  str_glue("some summary goes here {metricDefinitions[[metric]]@metricName}")
-
+  #lets build up the sentences
+  a <- str_glue("The {minAdjective} value of {metricName} was {x$min} ({scale}).")
+  b <- str_glue("The {maxAdjective} value of {metricName} was {x$max} ({scale}).")
+  c <- str_glue("The number of estimated data values were {x$estimates}.")
+  str_glue("{a}<br/>{b}<br/>{c}")
 }
 
 
@@ -288,6 +289,14 @@ seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
 # such as "fluidPage, "sidePanel", mainPanel etc take functions
 # as arguments hence the commas can seem misleading at times.
 ui <- fluidPage(
+  tags$head(
+    tags$style(HTML("
+       tr:nth-child(even) {
+            background-color: Lightblue;
+        }
+    "))
+  ),
+
   titlePanel("Primary school weather investigation"),
 
   sidebarPanel(
