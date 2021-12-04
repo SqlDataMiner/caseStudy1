@@ -184,7 +184,8 @@ generatePlot <- function(input, unifiedWeatherDataSet){
 }
 
 ## Functions used in our data display
-##allows us to map from string to a function more elegant than using branching statements
+# hash allows us to map from string to a function more elegant than using branching statements
+# hashAgg defines what aggregation function to use for which metric
 hashAgg <- hash()
 hashAgg[["rainfallmm"]] <- mean
 hashAgg[["maxTempDegreesC"]] <- mean
@@ -192,12 +193,108 @@ hashAgg[["minTempDegreesC"]] <- mean
 hashAgg[["sunHours"]] <- sum
 hashAgg[["airFrostDays"]] <- sum
 
+# hashAgg defines how to mutate the data for dyplr so formats correctly as airFrostDays are getting treated as
+# numeric inspite of being integer in vectors.
 hashFormat <- hash()
 hashFormat[["rainfallmm"]] <- as.numeric
 hashFormat[["maxTempDegreesC"]] <- as.numeric
 hashFormat[["minTempDegreesC"]] <- as.numeric
 hashFormat[["sunHours"]] <- as.numeric
 hashFormat[["airFrostDays"]] <- as.integer
+
+#defines measurements taken in
+hashScale <- hash()
+hashScale[["rainfallmm"]] <- "mm"
+hashScale[["maxTempDegreesC"]] <- "degrees celcius"
+hashScale[["minTempDegreesC"]] <- "degrees celcius"
+hashScale[["sunHours"]] <- "hours"
+hashScale[["airFrostDays"]] <- "days"
+
+#defines measurements taken in
+hashMetricName <- hash()
+hashMetricName[["rainfallmm"]] <- "rainfall"
+hashMetricName[["maxTempDegreesC"]] <- "maximum temperature"
+hashMetricName[["minTempDegreesC"]] <- "minimum temprature"
+hashMetricName[["sunHours"]] <- "daylight"
+hashMetricName[["airFrostDays"]] <- "air frost"
+
+#defines the appropriate adjective for when minimum is used
+hashMetricMinAdjective <- hash()
+hashMetricMinAdjective[["rainfallmm"]] <- "least"
+hashMetricMinAdjective[["maxTempDegreesC"]] <- "lowest"
+hashMetricMinAdjective[["minTempDegreesC"]] <- "lowest"
+hashMetricMinAdjective[["sunHours"]] <- "fewest"
+hashMetricMinAdjective[["airFrostDays"]] <- "fewest"
+
+#defines the appropriate adjective for when maximum is used
+hashMetricMaxAdjective <- hash()
+hashMetricMaxAdjective[["rainfallmm"]] <- "greatest"
+hashMetricMaxAdjective[["maxTempDegreesC"]] <- "highest"
+hashMetricMaxAdjective[["minTempDegreesC"]] <- "highest"
+hashMetricMaxAdjective[["sunHours"]] <- "most"
+hashMetricMaxAdjective[["airFrostDays"]] <- "most"
+
+
+#decide on the appropriate aggregation function by metric
+aggregationFunction <- function(metric){
+  hashAgg[[metric]]
+}
+
+#Decide on the appropriate format function by metric
+formatFunction <- function(metric){
+  hashFormat[[metric]]
+}
+
+# Functions which create output data
+seasonalSummaryTable <- function(data, yearFrom, yearTo, metric) {
+  data %>%
+    filter(years >= yearFrom) %>%
+    filter(years <= yearTo) %>%
+    group_by(name, season, years) %>%
+    summarise(typical=aggregationFunction(metric)(get(metric))) %>%
+    mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
+    pivot_wider(names_from=season, values_from=typical)%>%
+    arrange(name, years)
+}
+
+seasonalHeaderGenerate <- function(metric) {
+  str_glue("<h1>Seasonal {hashMetricName[[metric]]}</h1>")
+}
+
+seasonalDescriptionGenerate <- function(metric) {
+  #typical values will use mean to aggreate identical tests equality on our functions.
+  isTypicalValues <- identical(hashAgg[[metric]], mean)
+  print(isTypicalValues)
+  if (isTypicalValues){
+    s <- "Typical daily values for seasons of"
+  }else{
+    s <- "Total values for seasons of "
+  }
+
+  str_glue("{s} {hashMetricName[[metric]]} ({hashScale[[metric]]})")
+}
+seasonalSummaryGenerate <- function(data, metric,
+                        yearFrom, yearTo){
+  #find min
+  x <- data %>%
+    filter(years >= yearFrom) %>%
+    filter(years <= yearTo) %>%
+    group_by(name, season, years) %>%
+    summarise(min=min(get(metric)), max=max(get(metric)))
+  # find max
+
+  #find how many data points were estimates
+  y <- data %>%
+    filter(years >= yearFrom) %>%
+    filter(years <= yearTo)
+
+
+  "some summary goes here"
+
+}
+
+
+
 #*** Data ***
 # The list of weather stations, will format on processing to make extending the list less error prone.
 weatherStations <- c('Sheffield', 'Yeovilton', 'Durham', 'Heathrow', 'Newton Rigg',
@@ -252,8 +349,11 @@ ui <- fluidPage(
       tabPanel("Bar chart and commentry",
                plotOutput("mainPlot")
       ),
-      tabPanel("Table of data",
-               tableOutput("mainTable")
+      tabPanel("Tables of data",
+               htmlOutput("seasonsHeader"),
+               htmlOutput("seasonsDescription"),
+               tableOutput("seasonsTable"),
+               htmlOutput("seasonsSummary"),
       )
     )
   )
@@ -301,26 +401,8 @@ server <- function(input, output) {
 
   }
 
-  #decide on the appropriate aggregation function by metric
-  aggregationFunction <- function(){
-    hashAgg[[input$investigationMetric]]
-  }
-
-  #Decide on the appropriate format function by metric
-  formatFunction <- function(){
-    hashFormat[[input$investigationMetric]]
-  }
-
-  tableGeneration <- reactive({
-
-    unifiedWeatherDataSet %>%
-      filter(years >= input$yearfrom) %>%
-      filter(years <= input$yearto) %>%
-      group_by(name, season, years) %>%
-      summarise(typical=aggregationFunction()(get(input$investigationMetric))) %>%
-      mutate(typical=formatFunction()(typical), years = as.integer(years)) %>%
-      pivot_wider(names_from=season, values_from=typical)%>%
-      arrange(name, years)
+  seasonTableGeneration <- reactive({
+    seasonalSummaryTable(unifiedWeatherDataSet, input$yearfrom, input$yearto, input$investigationMetric)
   })
 
   # update dropdowns with data required
@@ -333,7 +415,11 @@ server <- function(input, output) {
     generatePlot(input, unifiedWeatherDataSet)
   })
 
-  output$mainTable <- renderTable({ tableGeneration() })
+  output$seasonsTable <- renderTable({ seasonTableGeneration() })
+  output$seasonsHeader <-renderText({  seasonalHeaderGenerate(input$investigationMetric)  })
+  output$seasonsDescription <- renderText({seasonalDescriptionGenerate(input$investigationMetric)})
+  output$seasonsSummary <- renderText(seasonalSummaryGenerate(unifiedWeatherDataSet, input$investigationMetric,
+                                                              input$yearfrom, input$yearto))
 }
 # Run the application
 shinyApp(ui = ui, server = server)
