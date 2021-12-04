@@ -280,8 +280,7 @@ monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
     relocate(Aug, .after=Jul) %>%
     relocate(Sep, .after=Aug) %>%
     relocate(Oct, .after=Sep) %>%
-    relocate(Nov, .after=Oct) %>%
-    relocate(Dec, .after=Nov)
+    relocate(Nov, .after=Oct)
 }
 
 monthlyHeaderGenerate <- function(metric) {
