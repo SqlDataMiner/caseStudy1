@@ -183,66 +183,32 @@ generatePlot <- function(input, unifiedWeatherDataSet){
   }
 }
 
-## Functions used in our data display
-# hash allows us to map from string to a function more elegant than using branching statements
-# hashAgg defines what aggregation function to use for which metric
-hashAgg <- hash()
-hashAgg[["rainfallmm"]] <- mean
-hashAgg[["maxTempDegreesC"]] <- mean
-hashAgg[["minTempDegreesC"]] <- mean
-hashAgg[["sunHours"]] <- sum
-hashAgg[["airFrostDays"]] <- sum
-
-# hashAgg defines how to mutate the data for dyplr so formats correctly as airFrostDays are getting treated as
-# numeric inspite of being integer in vectors.
-hashFormat <- hash()
-hashFormat[["rainfallmm"]] <- as.numeric
-hashFormat[["maxTempDegreesC"]] <- as.numeric
-hashFormat[["minTempDegreesC"]] <- as.numeric
-hashFormat[["sunHours"]] <- as.numeric
-hashFormat[["airFrostDays"]] <- as.integer
-
-#defines measurements taken in
-hashScale <- hash()
-hashScale[["rainfallmm"]] <- "mm"
-hashScale[["maxTempDegreesC"]] <- "degrees celcius"
-hashScale[["minTempDegreesC"]] <- "degrees celcius"
-hashScale[["sunHours"]] <- "hours"
-hashScale[["airFrostDays"]] <- "days"
-
-#defines measurements taken in
-hashMetricName <- hash()
-hashMetricName[["rainfallmm"]] <- "rainfall"
-hashMetricName[["maxTempDegreesC"]] <- "maximum temperature"
-hashMetricName[["minTempDegreesC"]] <- "minimum temprature"
-hashMetricName[["sunHours"]] <- "daylight"
-hashMetricName[["airFrostDays"]] <- "air frost"
-
-#defines the appropriate adjective for when minimum is used
-hashMetricMinAdjective <- hash()
-hashMetricMinAdjective[["rainfallmm"]] <- "least"
-hashMetricMinAdjective[["maxTempDegreesC"]] <- "lowest"
-hashMetricMinAdjective[["minTempDegreesC"]] <- "lowest"
-hashMetricMinAdjective[["sunHours"]] <- "fewest"
-hashMetricMinAdjective[["airFrostDays"]] <- "fewest"
-
-#defines the appropriate adjective for when maximum is used
-hashMetricMaxAdjective <- hash()
-hashMetricMaxAdjective[["rainfallmm"]] <- "greatest"
-hashMetricMaxAdjective[["maxTempDegreesC"]] <- "highest"
-hashMetricMaxAdjective[["minTempDegreesC"]] <- "highest"
-hashMetricMaxAdjective[["sunHours"]] <- "most"
-hashMetricMaxAdjective[["airFrostDays"]] <- "most"
+# create a class for holding all the metric releated information
+setClass("metricDefinition", slots=list(metricName="character", aggregation="function", format="function",
+                                        scale="character", name="character",
+                                        minimumAdjective="character", maximumAdjective="character"))
+# hash allows us to map from string to an object.  Saves us having to write branching statements (if else etc) everywhere.
+metricDefinitions <- hash()
+metricDefinitions[["rainfallmm"]] <- new("metricDefinition", metricName="rainfall", aggregation = mean, format= as.numeric, scale="mm",
+                               minimumAdjective="least", maximumAdjective="greatest")
+metricDefinitions[["maxTempDegreesC"]] <- new("metricDefinition", metricName="", aggregation = mean, format= as.numeric, scale="degrees celcius",
+                                              minimumAdjective="lowest", maximumAdjective="highest")
+metricDefinitions[["minTempDegreesC"]] <- new("metricDefinition", metricName="", aggregation = mean, format= as.numeric, scale="degrees celcius",
+                                              minimumAdjective="lowest", maximumAdjective="highest")
+metricDefinitions[["sunHours"]] <- new("metricDefinition", metricName="", aggregation = sum, format= as.numeric, scale="hours",
+                                       minimumAdjective="fewest", maximumAdjective="most")
+metricDefinitions[["airFrostDays"]] <-  new("metricDefinition", metricName="", aggregation = sum, format= as.integer, scale="days",
+                                            minimumAdjective="fewest", maximumAdjective="most")
 
 
 #decide on the appropriate aggregation function by metric
 aggregationFunction <- function(metric){
-  hashAgg[[metric]]
+  metricDefinitions[[metric]]@aggregation
 }
 
 #Decide on the appropriate format function by metric
 formatFunction <- function(metric){
-  hashFormat[[metric]]
+  metricDefinitions[[metric]]@format
 }
 
 # Functions which create output data
@@ -258,7 +224,7 @@ seasonalSummaryTable <- function(data, yearFrom, yearTo, metric) {
 }
 
 seasonalHeaderGenerate <- function(metric) {
-  str_glue("<h1>Seasonal {hashMetricName[[metric]]}</h1>")
+  str_glue("<h1>Seasonal {metricDefinitions[[metric]]@metricName}</h1>")
 }
 
 seasonalDescriptionGenerate <- function(metric) {
@@ -271,7 +237,7 @@ seasonalDescriptionGenerate <- function(metric) {
     s <- "Total values for seasons of "
   }
 
-  str_glue("{s} {hashMetricName[[metric]]} ({hashScale[[metric]]})")
+  str_glue("{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})")
 }
 seasonalSummaryGenerate <- function(data, metric,
                         yearFrom, yearTo){
@@ -289,7 +255,7 @@ seasonalSummaryGenerate <- function(data, metric,
     filter(years <= yearTo)
 
 
-  "some summary goes here"
+  str_glue("some summary goes here {metricDefinitions[[metric]]@metricName}")
 
 }
 
