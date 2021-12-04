@@ -172,13 +172,24 @@ weatherStationDataList <- lapply(filesToProcess, parseWeatherStationData)
 #create a list of dataframes which will allow us to create a unified dataset
 dataTables <- lapply(weatherStationDataList, function(station){station@data})
 
+monthNames <- c("January", "February", "March", "April", "May",
+                "June", "July", "August", "September", "October",
+                "November", "December")
+
 # seasons as defined by met office:   https://www.metoffice.gov.uk/weather/learn-about/met-office-for-schools/other-content/other-resources/our-seasons
 seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
                                "summer", "summer", "summer", "autumn", "autumn",
-                               "autumn", "winter"), months=seq(1, 12, 1))
+                               "autumn", "winter"), months=seq(1, 12, 1),
+                      monthNames=c("January", "February", "March", "April", "May",
+                                   "June", "July", "August", "September", "October",
+                                   "November", "December"))
 #union all the dataframes together using merge function and add season to the rows.
 unifiedWeatherDataSet <-  Reduce(function(x,y) {merge(x,y, all=TRUE)}, dataTables) %>%
                           inner_join(seasons, by="months")
 
+yearsOfInterest <- unifiedWeatherDataSet %>%
+                    select(years) %>%
+                    distinct(years) %>%
+                    arrange(years)
 
 

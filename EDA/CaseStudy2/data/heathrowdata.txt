@@ -890,4 +890,5 @@ Sunshine data taken from an automatic Kipp & Zonen sensor marked with a #, other
    2021   7   24.2    14.9       0    61.2   171.1#  Provisional
    2021   8   21.9    13.4       0    42.2    95.6#  Provisional
    2021   9   22.3    13.3       0    52.4   124.0#  Provisional
-   2021  10   16.9     9.7       0    87.6    84.2#  Provisional
+   2021  10   16.9     9.7       0    87.6    84.2#  Provisional
+   2021  11   11.4     4.5       3    10.2    67.8#  Provisional
