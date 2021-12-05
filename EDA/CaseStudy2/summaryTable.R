@@ -101,25 +101,32 @@ seasonalSummaryGenerate <- function(data, metric,
 }
 
 monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
-  data %>%
+  x <- data %>%
     filter(years >= yearFrom) %>%
     filter(years <= yearTo) %>%
     group_by(name, monthNamesShort, years) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
     pivot_wider(names_from=monthNamesShort, values_from=typical)%>%
-    arrange(name, years) %>%
-    relocate(Jan, .after=years) %>%
-    relocate(Feb, .after=Jan) %>%
-    relocate(Mar, .after=Feb) %>%
-    relocate(Apr, .after=Mar) %>%
-    relocate(May, .after=Apr) %>%
-    relocate(Jun, .after=May) %>%
-    relocate(Jul, .after=Jun) %>%
-    relocate(Aug, .after=Jul) %>%
-    relocate(Sep, .after=Aug) %>%
-    relocate(Oct, .after=Sep) %>%
-    relocate(Nov, .after=Oct)
+    arrange(name, years)
+  #in dyplr if you try to reloacte a column which does not exist then you get an empty dataframe back
+  # this is a real issue as were you to redownload the data part way through the current year you
+  # would miss the months which had been uploaded.  Therefore we will handle this.
+  monthNamesShort <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                       "Sep", "Oct", "Nov", "Dec")
+
+    columns <- colnames(x)
+    afterCol <- "years"
+  for(i in 1:length(monthNamesShort)) {
+    month <- monthNamesShort[i]
+    if (month%in%columns){
+      x <- x %>%
+        relocate(!!as.symbol(month), .after=!!as.symbol(afterCol))
+    }
+    afterCol<- month
+  }
+
+  x
 }
 
 monthlyHeaderGenerate <- function(metric) {
