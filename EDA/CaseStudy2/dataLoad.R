@@ -19,12 +19,12 @@ monthNamesShort <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
                                "summer", "summer", "summer", "autumn", "autumn",
                                "autumn", "winter"),
-                      months=seq(1, 12, 1),
+                      mm=seq(1, 12, 1),
                       monthNames=monthNames,
                       monthNamesShort=monthNamesShort)
 
 #*** Class definitions ***
-setClass("LoadData", slots=list(data="data.frame", weatherStations="character", yearsOfInterest="data.frame" ))
+setClass("LoadData", slots=list(alldata="data.frame", weatherStations="character", yearsOfInterest="data.frame" ))
 
 # *** Class Definitions ***
 # A class to hold each weather stations data
@@ -34,7 +34,7 @@ setClass("weatherStationData", slots=list(name="character", aboveMeanSeaLevelMet
 
 # A class representing the result of a parsed element
 setClass("dataElement", slots=list(value="numeric", isEstimate="logical",
-                                   wasSunMeasuredUsingCambellStokesRecorder="logical"))
+                                   wasSunMeasuredUsingKippAndZonenRecorder="integer"))
 
 # A class representing the download information for a weatherstation
 setClass("downloadInfo", slots=list(url="character", fileName="character"))
@@ -63,13 +63,17 @@ formatWeatherStationNameForDownload <- function (weatherStationName) {
 #    (3) if the data is not missing and is marked with a * then isEstimate=TRUE else isEstimate=False
 parseExpectedNumericDataElement <- function(element) {
   if(element == '---') {
-    result <- new("dataElement", value = NA_real_, isEstimate = NA, wasSunMeasuredUsingCambellStokesRecorder = NA)
+    result <- new("dataElement", value = NA_real_, isEstimate = NA, wasSunMeasuredUsingKippAndZonenRecorder = NA_integer_)
   } else {
     isEstimate <-  grepl("*", element, fixed=TRUE)
-    wasSunMeasuredUsingCambellStokesRecorder <- grepl("#", element, fixed =TRUE)
+    if (grepl("#", element, fixed =TRUE)) {
+      wasSunMeasuredUsingKippAndZonenRecorder <- as.integer(1)
+    } else {
+      wasSunMeasuredUsingKippAndZonenRecorder <- as.integer(0)
+    }
     value <- as.numeric(str_extract(element, "\\(?[0-9.-]+\\)?"))
     result <-  new("dataElement", value = value, isEstimate = isEstimate,
-                   wasSunMeasuredUsingCambellStokesRecorder = wasSunMeasuredUsingCambellStokesRecorder)
+                   wasSunMeasuredUsingKippAndZonenRecorder = wasSunMeasuredUsingKippAndZonenRecorder)
   }
   result
 }
@@ -116,6 +120,7 @@ parseWeatherStationData <- function(fileName) {
   locationName <- rep(name, times=vectorLength - 1)
   latitude <- rep(lat, times=vectorLength - 1)
   longatude <- rep(lon, times=vectorLength - 1)
+  alt <- rep(aboveMeanSeaLevelMeters, times=vectorLength - 1)
   years <- c(vectorLength)
   months <-c(vectorLength)
   maxTemp <- c(vectorLength)
@@ -127,7 +132,7 @@ parseWeatherStationData <- function(fileName) {
   rainfall <- c(vectorLength)
   wasRainfallEstimated <- c(vectorLength)
   sun <- c(vectorLength)
-  wasSunMeasuredUsingCambellStokesRecorder <- c(vectorLength)
+  wasSunMeasuredUsingKippAndZonenRecorder <- c(vectorLength)
   wasSunEstimated <- c(vectorLength)
   isProvisionalRecord <- c(vectorLength)
 
@@ -158,20 +163,20 @@ parseWeatherStationData <- function(fileName) {
     s <- parseExpectedNumericDataElement(lineVector[7])
     sun[offset] <-  s@value
     wasSunEstimated[offset] <- s@isEstimate
-    wasSunMeasuredUsingCambellStokesRecorder[offset] <- s@wasSunMeasuredUsingCambellStokesRecorder
+    wasSunMeasuredUsingKippAndZonenRecorder[offset] <- s@wasSunMeasuredUsingKippAndZonenRecorder
     isProvisional <- grepl("Provisional", currentLine, fixed=TRUE)
     isProvisionalRecord[offset] <- isProvisional
   }
 
   #name columns with scales
-  dataFrame <- data.frame(name=locationName, lat=latitude, lon=longatude,
-                          years=years, months=months, maxTempDegreesC=maxTemp,
-                          wasMaxTempEstimated=wasMaxTempEstimated, minTempDegreesC=minTemp,
-                          wasMinTempEstimated=wasMinTempEstimated, airFrostDays=airFrost,
-                          wasAirFrostEstimated=wasAirFrostEstimated, rainfallmm=rainfall,
-                          wasRainfallEstimated=wasRainfallEstimated, sunHours=sun,
+  dataFrame <- data.frame(name=locationName, lat=latitude, long=longatude, alt = alt,
+                          yyyy=years, mm=months, tmax=maxTemp,
+                          wasMaxTempEstimated=wasMaxTempEstimated, tmin=minTemp,
+                          wasMinTempEstimated=wasMinTempEstimated, af=airFrost,
+                          wasAirFrostEstimated=wasAirFrostEstimated, rain=rainfall,
+                          wasRainfallEstimated=wasRainfallEstimated, sun=sun,
                           wasSunEstimated=wasSunEstimated,
-                          wasSunMeasuredUsingCambellStokesRecorder=wasSunMeasuredUsingCambellStokesRecorder,
+                          sun_recorder=wasSunMeasuredUsingKippAndZonenRecorder,
                           isProvisionalRecord=isProvisionalRecord)
 
   close(fileHandle)
@@ -208,18 +213,18 @@ dataLoad <- function(outputDir){
 
     #union all the dataframes together using merge function and add season to the rows.
     unifiedWeatherDataSet <-  Reduce(function(x,y) {merge(x,y, all=TRUE)}, dataTables) %>%
-      inner_join(seasons, by="months")
+      inner_join(seasons, by="mm")
 
     #find the years needed for dropdown
     yearsOfInterest <- unifiedWeatherDataSet %>%
-      select(years) %>%
-      distinct(years) %>%
-      arrange(desc(years))
+      select(yyyy) %>%
+      distinct(yyyy) %>%
+      arrange(desc(yyyy))
 
     weatherStationsOrdered <- sort(weatherStations)
 
     save(unifiedWeatherDataSet, yearsOfInterest, weatherStationsOrdered, file=rDataFile)
   }
 
-  new("LoadData", data = unifiedWeatherDataSet, weatherStations = weatherStationsOrdered, yearsOfInterest = yearsOfInterest)
+  new("LoadData", alldata = unifiedWeatherDataSet, weatherStations = weatherStationsOrdered, yearsOfInterest = yearsOfInterest)
 }
