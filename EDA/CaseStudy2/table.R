@@ -1,7 +1,10 @@
 #lets make it easy for the teacher and install packages if they don't exist.
 if(!(require(shiny))){install.packages('shiny')}
+if(!(require(hash))){install.packages('hash')}
+if(!(require(tidyverse))){install.packages('tidyverse')}
 
 library(shiny)
+library(tidyverse)
 
 # pull in functions from other files.
 source("dataLoad.R")

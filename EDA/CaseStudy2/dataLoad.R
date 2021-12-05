@@ -1,5 +1,3 @@
-if(!(require(tidyverse))){install.packages('tidyverse')}
-
 library(tidyverse)
 
 # Cache the data to speed up application startup time.

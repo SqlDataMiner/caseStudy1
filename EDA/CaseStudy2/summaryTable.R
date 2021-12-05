@@ -1,6 +1,5 @@
-if(!(require(hash))){install.packages('hash')}
-
 library(hash)
+library(tidyverse)
 
 generatePlot <- function(input, unifiedWeatherDataSet){
   #Not the most extensible code but its simple and suffices for 3 cases
