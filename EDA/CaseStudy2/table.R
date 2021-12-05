@@ -28,7 +28,7 @@ seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
                                "summer", "summer", "summer", "autumn", "autumn",
                                "autumn", "winter"),
                       mm=seq(1, 12, 1),
-                      monthNames=monthNames,
+                      monthName=monthNames,
                       monthNamesShort=monthNamesShort)
 
 #*** Class definitions ***
@@ -377,22 +377,32 @@ monthlySummaryGenerate <- function(data, metric,
   maxAdjective <- metricDefinitions[[metric]]@maximumAdjective
   metricName <- metricDefinitions[[metric]]@metricName
   scale <- metricDefinitions[[metric]]@scale
+  summary <- ""
 
-  x <- data %>%
-    filter(yyyy >= yearFrom) %>%
-    filter(yyyy <= yearTo) %>%
-    summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
-              estimates=sum(get(estimatedColumnName), na.rm = TRUE), provisional=sum(isProvisionalRecord, na.rm = TRUE),
-              mean=mean(get(metric), na.rm = TRUE), count=sum(is.na(get(metric)))
-    )
+  for(i in 1:length(monthNames)){
+    month <- monthNames[i]
 
-  #lets build up the sentences
-  a1 <- str_glue("The typical value of  {metricName} was {x$mean} ({scale}).")
-  a <- str_glue("The {minAdjective} value of {metricName} was {x$min} ({scale}).")
-  b <- str_glue("The {maxAdjective} value of {metricName} was {x$max} ({scale}).")
-  c <- str_glue("The number of estimated data values were {x$estimates}.")
-  d <- str_glue("The number of provisional data values were {x$provisional}.")
-  str_glue("{a1}<br>{a}<br/>{b}<br/>{c}<br/>{d}")
+    x <- data %>%
+        filter(yyyy >= yearFrom) %>%
+        filter(yyyy <= yearTo) %>%
+        filter(monthName == month)  %>%
+        summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
+                  estimates=sum(get(estimatedColumnName), na.rm = TRUE), provisional=sum(isProvisionalRecord, na.rm = TRUE),
+                  mean=mean(get(metric), na.rm = TRUE), count=sum(is.na(get(metric)))
+        )
+
+    if (!is.nan(x$mean)) {
+      #lets build up the sentences
+      a <- str_glue("In {month} the typical value of  {metricName} was {format(round(x$mean, 2), nsmall=2)} ({scale}).")
+      b <- str_glue("In {month} the {minAdjective} value of {metricName} was {x$min} ({scale}).")
+      c <- str_glue("In {month} the {maxAdjective} value of {metricName} was {x$max} ({scale}).")
+      d <- str_glue("In {month} the number of estimated data values were {x$estimates}.")
+      e <- str_glue("In {month} the number of provisional data values were {x$provisional}.")
+      summary <- str_glue("{summary}{a}<br>{b}<br/>{c}<br/>{d}<br/>{e}<br/><br/>")
+    }
+  }
+
+  summary
 }
 
 #*** TABLE GENERATION CODE END  ****
@@ -439,17 +449,15 @@ ui <- fluidPage(
                            "Min Temperature" = "tmin",
                            "Air Frost" = "af",
                            "Daylight" = "sun")),
-
-    #selectizeInput("yearfrom", "year from", choices = c()),
-    #selectizeInput("yearto", "years to", choices = c()),
     selectInput("month", "Month", choices = monthNamesShort),
     selectizeInput("place", "Location", choices = c()),
                    # Input: Slider for the number of bins ---
     sliderInput(inputId = "year_range",
                 label = "Year Range:",
-                min = 1883,
-                max = 2021,
-                value = c(1883, 2021),
+                min = 0,
+                max = 0,
+                value = c(0, 0),
+                step=1,
     dragRange = TRUE)
   ),
   mainPanel(
