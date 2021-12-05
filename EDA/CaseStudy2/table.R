@@ -274,10 +274,11 @@ formatFunction <- function(metric){
 }
 
 # Functions which create output data
-seasonalSummaryTable <- function(data, yearFrom, yearTo, metric) {
+seasonalSummaryTable <- function(data, yearFrom, yearTo, metric, placeName) {
   data %>%
     filter(yyyy >= yearFrom) %>%
     filter(yyyy <= yearTo) %>%
+   # filter(place == placeName) %>%
     group_by(name, season, yyyy) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), yyyy = as.integer(yyyy)) %>%
@@ -290,6 +291,8 @@ seasonalHeaderGenerate <- function(metric) {
 }
 
 seasonalDescriptionGenerate <- function(metric) {
+  warning <- "<b>WARNING this page ignores the month AND place inputs.</b><br/>"
+
   #typical values will use mean to aggreate identical tests equality on our functions.
   isTypicalValues <- identical(metricDefinitions[[metric]]@aggregation, mean)
   if (isTypicalValues){
@@ -299,7 +302,7 @@ seasonalDescriptionGenerate <- function(metric) {
   }
   url <- "https://www.metoffice.gov.uk/weather/learn-about/met-office-for-schools/other-content/other-resources/our-seasons"
   t <- str_glue("The definition used for seasons is given by the met office at: <a href='{url}'>{url}</a>")
-  str_glue("{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})<br/>{t}")
+  str_glue("{warning}{s} {metricDefinitions[[metric]]@metricName} ({metricDefinitions[[metric]]@scale})<br/>{t}")
 }
 seasonalSummaryGenerate <- function(data, metric,
                                     yearFrom, yearTo){
@@ -322,10 +325,11 @@ seasonalSummaryGenerate <- function(data, metric,
   str_glue("{a}<br/>{b}<br/>{c}")
 }
 
-monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
+monthlySummaryTable <- function(data, yearFrom, yearTo, metric, placeName) {
   x <- data %>%
     filter(yyyy >= yearFrom) %>%
     filter(yyyy <= yearTo) %>%
+    #filter(place == placeName) %>%
     group_by(name, monthNamesShort, yyyy) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), yyyy = as.integer(yyyy)) %>%
@@ -459,7 +463,7 @@ ui <- fluidPage(
                htmlOutput("monthlyHeader"),
                htmlOutput("monthlyDescription"),
                tableOutput("monthlyTable"),
-              # htmlOutput("monthlySummary")
+              htmlOutput("monthlySummary")
 
       )
     )
@@ -489,23 +493,23 @@ server <- function(input, output) {
 
   #create seasonal tabular data and commentry
   seasonTableGeneration <- reactive({
-    seasonalSummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric)
+    seasonalSummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric, input$place)
   })
 
   output$seasonsTable <- renderTable({ seasonTableGeneration() })
   output$seasonsHeader <-renderText({  seasonalHeaderGenerate(input$investigationMetric)  })
   output$seasonsDescription <- renderText({seasonalDescriptionGenerate(input$investigationMetric)})
-  output$seasonsSummary <- renderText(seasonalSummaryGenerate(data, input$investigationMetric,
+  output$seasonsSummary <- renderText(seasonalSummaryGenerate(alldata, input$investigationMetric,
                                                               input$yearfrom, input$yearto))
 
   #create monthly tabular data and commentry
   monthlyTableGeneration <- reactive({
-    monthlySummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric)
+    monthlySummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric, input$place)
   })
   output$monthlyTable <- renderTable({monthlyTableGeneration()})
   output$monthlyHeader <-renderText({monthlyHeaderGenerate(input$investigationMetric)})
   output$monthlyDescription <- renderText({monthlyDescriptionGenerate(input$investigationMetric)})
-  output$monthlySummary <- renderText({monthlySummaryGenerate(data, input$investigationMetric,
+  output$monthlySummary <- renderText({monthlySummaryGenerate(alldata, input$investigationMetric,
                                                               input$year_range[1], input$year_range[2])})
 
 
