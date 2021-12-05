@@ -108,7 +108,7 @@ parseWeatherStationData <- function(fileName) {
   lines <- readLines(fileHandle, warn=FALSE)
   name <- lines[1]
   locationLine <- lines[2]
-
+  placeName <- str_replace_all(basename(fileName), 'data.txt', '')
   #parse in the data we need for location split on whitespace
   locationVector <- unlist(strsplit(locationLine, split = "\\s+"))
   aboveMeanSeaLevelMeters <- as.numeric(str_replace_all(locationVector[8], '[^[:digit:]]', ''))
@@ -129,6 +129,7 @@ parseWeatherStationData <- function(fileName) {
   latitude <- rep(lat, times=vectorLength - 1)
   longatude <- rep(lon, times=vectorLength - 1)
   alt <- rep(aboveMeanSeaLevelMeters, times=vectorLength - 1)
+  place <- rep(placeName, times=vectorLength - 1)
   years <- c(vectorLength)
   months <-c(vectorLength)
   maxTemp <- c(vectorLength)
@@ -179,7 +180,7 @@ parseWeatherStationData <- function(fileName) {
   }
 
   #name columns with scales
-  dataFrame <- data.frame(name=locationName, lat=latitude, long=longatude, alt = alt,
+  dataFrame <- data.frame(name=locationName, place=place, lat=latitude, long=longatude, alt = alt,
                           yyyy=years, mm=months, tmax=maxTemp,
                           wasMaxTempEstimated=wasMaxTempEstimated, tmin=minTemp,
                           wasMinTempEstimated=wasMinTempEstimated, af=airFrost,
@@ -231,7 +232,7 @@ dataLoad <- function(outputDir){
       distinct(yyyy) %>%
       arrange(desc(yyyy))
 
-    weatherStationsOrdered <- sort(weatherStations)
+    weatherStationsOrdered <- sort(unlist(lapply(weatherStations, formatWeatherStationNameForDownload)))
 
     save(unifiedWeatherDataSet, yearsOfInterest, weatherStationsOrdered, file=rDataFile)
   }
@@ -408,15 +409,8 @@ ui <- fluidPage(
   titlePanel("Primary school weather investigation"),
 
   sidebarPanel(
-    # First control: a widget to select the interval type
-    selectInput(inputId = "investigationType",
-                label = "Investigate weather by:",
-                choices = c("Months and seasons" = "seasons",
-                            "Location" = "location",
-                            "Time" = "time")),
-
     selectInput(inputId = "investigationMetric",
-                label = "What to investigate:",
+                label = "Weather Measure",
                 choices =c("Rainfall" = "rain",
                            "Max Temperature" = "tmax",
                            "Min Temperature" = "tmin",
@@ -424,13 +418,22 @@ ui <- fluidPage(
                            "Daylight" = "sun")),
 
     selectizeInput("yearfrom", "year from", choices = c()),
-    selectizeInput("yearto", "years to", choices = c())
+    selectizeInput("yearto", "years to", choices = c()),
+    selectInput("month", "Month", choices = c(1:12)),
+    selectizeInput("place", "Location", choices = c()),
+                   # Input: Slider for the number of bins ---
+    sliderInput(inputId = "year_range",
+                label = "Year Range:",
+                min = 1883,
+                max = 2021,
+                value = c(1883, 2021),
+    dragRange = TRUE)
   ),
   mainPanel(
     tabsetPanel(
 
-      tabPanel("Bar chart and commentry",
-               plotOutput("mainPlot")
+      tabPanel("Time Series Plot",
+               plotOutput(outputId = "Plot")
       ),
       tabPanel("Tables of data",
                htmlOutput("seasonsHeader"),
@@ -456,22 +459,22 @@ server <- function(input, output) {
 
   #Load the data and assign to variables
   load <- dataLoad(outputdir)
-  data <- load@alldata
+  alldata <- load@alldata
   yearsOfInterest <- load@yearsOfInterest
   weatherStations <- load@weatherStations
 
   seasonTableGeneration <- reactive({
-    seasonalSummaryTable(data, input$yearfrom, input$yearto, input$investigationMetric)
+    seasonalSummaryTable(alldata, input$yearfrom, input$yearto, input$investigationMetric)
   })
 
   monthlyTableGeneration <- reactive({
-    monthlySummaryTable(data, input$yearfrom, input$yearto, input$investigationMetric)
+    monthlySummaryTable(alldata, input$yearfrom, input$yearto, input$investigationMetric)
   })
 
   # update dropdowns with data required
   updateSelectInput(inputId = "yearfrom", choices = yearsOfInterest)
   updateSelectInput(inputId = "yearto", choices = yearsOfInterest)
-
+  updateSelectInput(inputId = "place", choices= weatherStations)
 
 
   output$mainPlot <- renderPlot({
@@ -491,6 +494,22 @@ server <- function(input, output) {
   output$monthlyDescription <- renderText({monthlyDescriptionGenerate(input$investigationMetric)})
   output$monthlySummary <- renderText({monthlySummaryGenerate(data, input$investigationMetric,
                                                               input$yearfrom, input$yearto)})
+
+ # output$Plot <- renderPlot({
+
+ #   data_subset <- alldata[alldata$place == input$place, ]
+ #   data_subset <- data_subset[data_subset$mm == input$month, ]
+ #   data_subset <- data_subset %>% select(yyyy, input$metric)
+
+    #metric <- input$metric
+
+    #ggplot(data_subset)+
+    #  aes(x=yyyy, y = !!as.symbol(metric))+
+    #  geom_line(color = 'blue')+ labs(y = input$metric, x = "Years (CE)") +
+    #  xlim(input$year_range)
+
+  #})
+
 }
 # Run the application
 shinyApp(ui = ui, server = server)
