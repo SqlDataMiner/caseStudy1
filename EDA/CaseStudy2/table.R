@@ -390,6 +390,22 @@ monthlySummaryGenerate <- function(data, metric,
 
 #*** TABLE GENERATION CODE END  ****
 
+#*** TIME SERIES PLOT START ****
+timeSeriesPlot <- function (alldata, place, month, metric, yearRange){
+
+  data_subset <- alldata[alldata$place == place, ]
+  data_subset <- data_subset[data_subset$monthNamesShort == month, ]
+  data_subset <- data_subset %>% select(yyyy, metric)
+
+  ggplot(data_subset)+
+    aes(x=yyyy, y = !!as.symbol(metric))+
+    geom_line(color = 'blue')+ labs(y = metric, x = "Years (CE)") +
+    xlim(yearRange)
+}
+
+
+#*** TIME SERIES PLOT END ****
+
 
 #*** SHINY/UI CODE START ****
 # Define the user interface
@@ -419,7 +435,7 @@ ui <- fluidPage(
 
     selectizeInput("yearfrom", "year from", choices = c()),
     selectizeInput("yearto", "years to", choices = c()),
-    selectInput("month", "Month", choices = c(1:12)),
+    selectInput("month", "Month", choices = monthNamesShort),
     selectizeInput("place", "Location", choices = c()),
                    # Input: Slider for the number of bins ---
     sliderInput(inputId = "year_range",
@@ -433,17 +449,17 @@ ui <- fluidPage(
     tabsetPanel(
 
       tabPanel("Time Series Plot",
-               plotOutput(outputId = "Plot")
+               plotOutput("plot")
       ),
       tabPanel("Tables of data",
                htmlOutput("seasonsHeader"),
                htmlOutput("seasonsDescription"),
                tableOutput("seasonsTable"),
-               htmlOutput("seasonsSummary"),
+              # htmlOutput("seasonsSummary"),
                htmlOutput("monthlyHeader"),
                htmlOutput("monthlyDescription"),
                tableOutput("monthlyTable"),
-               htmlOutput("monthlySummary")
+              # htmlOutput("monthlySummary")
 
       )
     )
@@ -463,25 +479,19 @@ server <- function(input, output) {
   yearsOfInterest <- load@yearsOfInterest
   weatherStations <- load@weatherStations
 
-  seasonTableGeneration <- reactive({
-    seasonalSummaryTable(alldata, input$yearfrom, input$yearto, input$investigationMetric)
-  })
-
-  monthlyTableGeneration <- reactive({
-    monthlySummaryTable(alldata, input$yearfrom, input$yearto, input$investigationMetric)
-  })
-
   # update dropdowns with data required
   updateSelectInput(inputId = "yearfrom", choices = yearsOfInterest)
   updateSelectInput(inputId = "yearto", choices = yearsOfInterest)
   updateSelectInput(inputId = "place", choices= weatherStations)
-
-
-  output$mainPlot <- renderPlot({
-
-  })
+  minYear <- min(yearsOfInterest)
+  maxYear <- max(yearsOfInterest)
+  updateSliderInput(inputId="year_range", min=minYear, max=maxYear, value=c(minYear, maxYear))
 
   #create seasonal tabular data and commentry
+  seasonTableGeneration <- reactive({
+    seasonalSummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric)
+  })
+
   output$seasonsTable <- renderTable({ seasonTableGeneration() })
   output$seasonsHeader <-renderText({  seasonalHeaderGenerate(input$investigationMetric)  })
   output$seasonsDescription <- renderText({seasonalDescriptionGenerate(input$investigationMetric)})
@@ -489,26 +499,21 @@ server <- function(input, output) {
                                                               input$yearfrom, input$yearto))
 
   #create monthly tabular data and commentry
+  monthlyTableGeneration <- reactive({
+    monthlySummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric)
+  })
   output$monthlyTable <- renderTable({monthlyTableGeneration()})
   output$monthlyHeader <-renderText({monthlyHeaderGenerate(input$investigationMetric)})
   output$monthlyDescription <- renderText({monthlyDescriptionGenerate(input$investigationMetric)})
   output$monthlySummary <- renderText({monthlySummaryGenerate(data, input$investigationMetric,
-                                                              input$yearfrom, input$yearto)})
+                                                              input$year_range[1], input$year_range[2])})
 
- # output$Plot <- renderPlot({
 
- #   data_subset <- alldata[alldata$place == input$place, ]
- #   data_subset <- data_subset[data_subset$mm == input$month, ]
- #   data_subset <- data_subset %>% select(yyyy, input$metric)
+  timeSeriesPlotGeneration <- reactive({
+    timeSeriesPlot(alldata, input$place, input$month, input$investigationMetric, input$year_range)
+  })
 
-    #metric <- input$metric
-
-    #ggplot(data_subset)+
-    #  aes(x=yyyy, y = !!as.symbol(metric))+
-    #  geom_line(color = 'blue')+ labs(y = input$metric, x = "Years (CE)") +
-    #  xlim(input$year_range)
-
-  #})
+ output$plot <- renderPlot({ timeSeriesPlotGeneration()  })
 
 }
 # Run the application
