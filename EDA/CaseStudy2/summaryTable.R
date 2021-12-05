@@ -1,8 +1,6 @@
 if(!(require(hash))){install.packages('hash')}
 
 library(hash)
-#turn off summarise warning messages
-dplyr.summarise.inform <- FALSE
 
 generatePlot <- function(input, unifiedWeatherDataSet){
   #Not the most extensible code but its simple and suffices for 3 cases
@@ -60,7 +58,7 @@ seasonalSummaryTable <- function(data, yearFrom, yearTo, metric) {
     filter(years >= yearFrom) %>%
     filter(years <= yearTo) %>%
     group_by(name, season, years) %>%
-    summarise(typical=aggregationFunction(metric)(get(metric))) %>%
+    summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
     pivot_wider(names_from=season, values_from=typical)%>%
     arrange(name, years)
@@ -108,7 +106,7 @@ monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
     filter(years >= yearFrom) %>%
     filter(years <= yearTo) %>%
     group_by(name, monthNamesShort, years) %>%
-    summarise(typical=aggregationFunction(metric)(get(metric))) %>%
+    summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
     pivot_wider(names_from=monthNamesShort, values_from=typical)%>%
     arrange(name, years) %>%
