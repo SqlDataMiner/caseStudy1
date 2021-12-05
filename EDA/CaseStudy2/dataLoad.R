@@ -112,10 +112,10 @@ parseWeatherStationData <- function(fileName) {
   # 2) parse the data and populate the vectors
   # 3) create a data table
   numberOfHeaderlines <- 7
-  vectorLength <- length(lines) - numberOfHeaderlines
-  locationName <- rep(name, times=vectorLength-1)
-  latitude <- rep(lat, times=vectorLength-1)
-  longatude <- rep(lon, times=vectorLength-1)
+  vectorLength <- length(lines) - numberOfHeaderlines + 1
+  locationName <- rep(name, times=vectorLength - 1)
+  latitude <- rep(lat, times=vectorLength - 1)
+  longatude <- rep(lon, times=vectorLength - 1)
   years <- c(vectorLength)
   months <-c(vectorLength)
   maxTemp <- c(vectorLength)
@@ -140,26 +140,27 @@ parseWeatherStationData <- function(fileName) {
     lineVector <- unlist(strsplit(currentLine, split="\\s+"))
     # remove empty string which the split produces
     lineVector <- lineVector[lineVector != ""]
-    years[i - startAtLine] <-  as.integer(lineVector[1])
-    months[i - startAtLine] <-  as.integer(lineVector[2])
+    offset <- i - startAtLine + 1
+    years[offset] <-  as.integer(lineVector[1])
+    months[offset] <-  as.integer(lineVector[2])
     tempMax <- parseExpectedNumericDataElement(lineVector[3])
-    maxTemp[i - startAtLine] <-  tempMax@value
-    wasMaxTempEstimated[i - startAtLine] <-  tempMax@isEstimate
+    maxTemp[offset] <-  tempMax@value
+    wasMaxTempEstimated[offset] <-  tempMax@isEstimate
     tempMin <- parseExpectedNumericDataElement(lineVector[4])
-    minTemp[i - startAtLine] <- tempMin@value
-    wasMinTempEstimated[i - startAtLine] <-  tempMin@isEstimate
+    minTemp[offset] <- tempMin@value
+    wasMinTempEstimated[offset] <-  tempMin@isEstimate
     frost <- parseExpectedNumericDataElement(lineVector[5])
-    airFrost[i - startAtLine] <- as.integer(frost@value)
-    wasAirFrostEstimated[i - startAtLine] <- frost@isEstimate
+    airFrost[offset] <- as.integer(frost@value)
+    wasAirFrostEstimated[offset] <- frost@isEstimate
     rain <- parseExpectedNumericDataElement(lineVector[6])
-    rainfall[i - startAtLine] <- rain@value
-    wasRainfallEstimated[i - startAtLine] <- rain@isEstimate
+    rainfall[offset] <- rain@value
+    wasRainfallEstimated[offset] <- rain@isEstimate
     s <- parseExpectedNumericDataElement(lineVector[7])
-    sun[i - startAtLine] <-  s@value
-    wasSunEstimated[i - startAtLine] <- s@isEstimate
-    wasSunMeasuredUsingCambellStokesRecorder[i - startAtLine] <- s@wasSunMeasuredUsingCambellStokesRecorder
+    sun[offset] <-  s@value
+    wasSunEstimated[offset] <- s@isEstimate
+    wasSunMeasuredUsingCambellStokesRecorder[offset] <- s@wasSunMeasuredUsingCambellStokesRecorder
     isProvisional <- grepl("Provisional", currentLine, fixed=TRUE)
-    isProvisionalRecord[i - startAtLine] <- isProvisional
+    isProvisionalRecord[offset] <- isProvisional
   }
 
   #name columns with scales
