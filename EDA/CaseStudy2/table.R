@@ -312,17 +312,33 @@ seasonalSummaryGenerate <- function(data, metric,
   metricName <- metricDefinitions[[metric]]@metricName
   scale <- metricDefinitions[[metric]]@scale
 
-  x <- data %>%
-    filter(yyyy >= yearFrom) %>%
-    filter(yyyy <= yearTo) %>%
-    summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
-              estimates=sum(get(estimatedColumnName), na.rm = TRUE))
+  seasonVector <- c("spring", "summer", "autumn", "winter")
+  summary <- ""
 
-  #lets build up the sentences
-  a <- str_glue("The {minAdjective} value of {metricName} was {x$min} ({scale}).")
-  b <- str_glue("The {maxAdjective} value of {metricName} was {x$max} ({scale}).")
-  c <- str_glue("The number of estimated data values were {x$estimates}.")
-  str_glue("{a}<br/>{b}<br/>{c}")
+  for(i in 1:length(seasonVector)){
+    seasonName <- seasonVector[i]
+
+    x <- data %>%
+      filter(yyyy >= yearFrom) %>%
+      filter(yyyy <= yearTo) %>%
+      filter(season == seasonName)  %>%
+      summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
+                estimates=sum(get(estimatedColumnName), na.rm = TRUE), provisional=sum(isProvisionalRecord, na.rm = TRUE),
+                mean=mean(get(metric), na.rm = TRUE), count=sum(is.na(get(metric)))
+      )
+
+    if (!is.nan(x$mean)) {
+      #lets build up the sentences
+      a <- str_glue("In {seasonName} the typical value of  {metricName} was {format(round(x$mean, 1), nsmall=1)} ({scale}).")
+      b <- str_glue("In {seasonName} the {minAdjective} value of {metricName} was {x$min} ({scale}).")
+      c <- str_glue("In {seasonName} the {maxAdjective} value of {metricName} was {x$max} ({scale}).")
+      d <- str_glue("In {seasonName} the number of estimated data values were {x$estimates}.")
+      e <- str_glue("In {seasonName} the number of provisional data values were {x$provisional}.")
+      summary <- str_glue("{summary}{a}<br>{b}<br/>{c}<br/>{d}<br/>{e}<br/><br/>")
+    }
+  }
+
+  summary
 }
 
 monthlySummaryTable <- function(data, yearFrom, yearTo, metric, placeName) {
@@ -393,7 +409,7 @@ monthlySummaryGenerate <- function(data, metric,
 
     if (!is.nan(x$mean)) {
       #lets build up the sentences
-      a <- str_glue("In {month} the typical value of  {metricName} was {format(round(x$mean, 2), nsmall=2)} ({scale}).")
+      a <- str_glue("In {month} the typical value of  {metricName} was {format(round(x$mean, 1), nsmall=1)} ({scale}).")
       b <- str_glue("In {month} the {minAdjective} value of {metricName} was {x$min} ({scale}).")
       c <- str_glue("In {month} the {maxAdjective} value of {metricName} was {x$max} ({scale}).")
       d <- str_glue("In {month} the number of estimated data values were {x$estimates}.")
@@ -470,7 +486,7 @@ ui <- fluidPage(
                htmlOutput("seasonsHeader"),
                htmlOutput("seasonsDescription"),
                tableOutput("seasonsTable"),
-              # htmlOutput("seasonsSummary"),
+               htmlOutput("seasonsSummary"),
                htmlOutput("monthlyHeader"),
                htmlOutput("monthlyDescription"),
                tableOutput("monthlyTable"),
@@ -511,7 +527,7 @@ server <- function(input, output) {
   output$seasonsHeader <-renderText({  seasonalHeaderGenerate(input$investigationMetric)  })
   output$seasonsDescription <- renderText({seasonalDescriptionGenerate(input$investigationMetric)})
   output$seasonsSummary <- renderText(seasonalSummaryGenerate(alldata, input$investigationMetric,
-                                                              input$yearfrom, input$yearto))
+                                                              input$year_range[1], input$year_range[2]))
 
   #create monthly tabular data and commentry
   monthlyTableGeneration <- reactive({
