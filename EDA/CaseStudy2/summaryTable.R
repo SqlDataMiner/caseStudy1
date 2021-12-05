@@ -29,15 +29,15 @@ setClass("metricDefinition", slots=list(metricName="character", aggregation="fun
 ))
 # hash allows us to map from string to an object.  Saves us having to write branching statements (if else etc) everywhere.
 metricDefinitions <- hash()
-metricDefinitions[["rainfallmm"]] <- new("metricDefinition", metricName="rainfall", aggregation = mean, format= as.numeric, scale="mm",
+metricDefinitions[["rain"]] <- new("metricDefinition", metricName="rainfall", aggregation = mean, format= as.numeric, scale="mm",
                                          minimumAdjective="least", maximumAdjective="greatest", estimatedColumnName="wasRainfallEstimated")
-metricDefinitions[["maxTempDegreesC"]] <- new("metricDefinition", metricName="maximum temperature", aggregation = mean, format= as.numeric, scale="degrees celcius",
+metricDefinitions[["tmax"]] <- new("metricDefinition", metricName="maximum temperature", aggregation = mean, format= as.numeric, scale="degrees celcius",
                                               minimumAdjective="lowest", maximumAdjective="highest", estimatedColumnName="wasMaxTempEstimated")
-metricDefinitions[["minTempDegreesC"]] <- new("metricDefinition", metricName="minimum temperature", aggregation = mean, format= as.numeric, scale="degrees celcius",
+metricDefinitions[["tmin"]] <- new("metricDefinition", metricName="minimum temperature", aggregation = mean, format= as.numeric, scale="degrees celcius",
                                               minimumAdjective="lowest", maximumAdjective="highest", estimatedColumnName="wasMinTempEstimated")
-metricDefinitions[["sunHours"]] <- new("metricDefinition", metricName="daylight", aggregation = sum, format= as.numeric, scale="hours",
+metricDefinitions[["sun"]] <- new("metricDefinition", metricName="daylight", aggregation = sum, format= as.numeric, scale="hours",
                                        minimumAdjective="fewest", maximumAdjective="most", estimatedColumnName="wasSunEstimated")
-metricDefinitions[["airFrostDays"]] <-  new("metricDefinition", metricName="air frost", aggregation = sum, format= as.integer, scale="days",
+metricDefinitions[["af"]] <-  new("metricDefinition", metricName="air frost", aggregation = sum, format= as.integer, scale="days",
                                             minimumAdjective="fewest", maximumAdjective="most", estimatedColumnName="wasAirFrostEstimated")
 
 
@@ -54,13 +54,13 @@ formatFunction <- function(metric){
 # Functions which create output data
 seasonalSummaryTable <- function(data, yearFrom, yearTo, metric) {
   data %>%
-    filter(years >= yearFrom) %>%
-    filter(years <= yearTo) %>%
-    group_by(name, season, years) %>%
+    filter(yyyy >= yearFrom) %>%
+    filter(yyyy <= yearTo) %>%
+    group_by(name, season, yyyy) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
-    mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
+    mutate(typical=formatFunction(metric)(typical), yyyy = as.integer(yyyy)) %>%
     pivot_wider(names_from=season, values_from=typical)%>%
-    arrange(name, years)
+    arrange(name, yyyy)
 }
 
 seasonalHeaderGenerate <- function(metric) {
@@ -88,8 +88,8 @@ seasonalSummaryGenerate <- function(data, metric,
   scale <- metricDefinitions[[metric]]@scale
 
   x <- data %>%
-    filter(years >= yearFrom) %>%
-    filter(years <= yearTo) %>%
+    filter(yyyy >= yearFrom) %>%
+    filter(yyyy <= yearTo) %>%
     summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
               estimates=sum(get(estimatedColumnName), na.rm = TRUE))
 
@@ -102,13 +102,13 @@ seasonalSummaryGenerate <- function(data, metric,
 
 monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
   x <- data %>%
-    filter(years >= yearFrom) %>%
-    filter(years <= yearTo) %>%
-    group_by(name, monthNamesShort, years) %>%
+    filter(yyyy >= yearFrom) %>%
+    filter(yyyy <= yearTo) %>%
+    group_by(name, monthNamesShort, yyyy) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
-    mutate(typical=formatFunction(metric)(typical), years = as.integer(years)) %>%
+    mutate(typical=formatFunction(metric)(typical), yyyy = as.integer(yyyy)) %>%
     pivot_wider(names_from=monthNamesShort, values_from=typical)%>%
-    arrange(name, years)
+    arrange(name, yyyy)
   #in dyplr if you try to reloacte a column which does not exist then you get an empty dataframe back
   # this is a real issue as were you to redownload the data part way through the current year you
   # would miss the months which had been uploaded.  Therefore we will handle this.
@@ -116,7 +116,7 @@ monthlySummaryTable <- function(data, yearFrom, yearTo, metric) {
                        "Sep", "Oct", "Nov", "Dec")
 
     columns <- colnames(x)
-    afterCol <- "years"
+    afterCol <- "yyyy"
   for(i in 1:length(monthNamesShort)) {
     month <- monthNamesShort[i]
     if (month%in%columns){
@@ -153,8 +153,8 @@ monthlySummaryGenerate <- function(data, metric,
   scale <- metricDefinitions[[metric]]@scale
 
   x <- data %>%
-    filter(years >= yearFrom) %>%
-    filter(years <= yearTo) %>%
+    filter(yyyy >= yearFrom) %>%
+    filter(yyyy <= yearTo) %>%
     summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
               estimates=sum(get(estimatedColumnName), na.rm = TRUE))
 
