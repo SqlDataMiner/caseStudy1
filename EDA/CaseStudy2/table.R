@@ -32,7 +32,7 @@ seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
                       monthNamesShort=monthNamesShort)
 
 #*** Class definitions ***
-setClass("LoadData", slots=list(alldata="data.frame", weatherStations="character", yearsOfInterest="data.frame" ))
+setClass("LoadData", slots=list(alldata="data.frame", weatherStations="character", weatherStationsProperCase="character", yearsOfInterest="data.frame" ))
 
 # *** Class Definitions ***
 # A class to hold each weather stations data
@@ -234,10 +234,13 @@ dataLoad <- function(outputDir){
 
     weatherStationsOrdered <- sort(unlist(lapply(weatherStations, formatWeatherStationNameForDownload)))
 
-    save(unifiedWeatherDataSet, yearsOfInterest, weatherStationsOrdered, file=rDataFile)
+    weatherStationsProperCase <- sort(weatherStations)
+
+    save(unifiedWeatherDataSet, yearsOfInterest, weatherStationsOrdered, weatherStationsProperCase, file=rDataFile)
   }
 
-  new("LoadData", alldata = unifiedWeatherDataSet, weatherStations = weatherStationsOrdered, yearsOfInterest = yearsOfInterest)
+  new("LoadData", alldata = unifiedWeatherDataSet, weatherStations = weatherStationsOrdered,
+      weatherStationsProperCase = weatherStationsProperCase, yearsOfInterest = yearsOfInterest)
 }
 
 # *** DOWNLOAD, EXTRACT, TRANSFORM CODE END *********
@@ -426,7 +429,7 @@ monthlySummaryGenerate <- function(data, metric,
 #*** TIME SERIES PLOT START ****
 timeSeriesPlot <- function (alldata, place, month, metric, yearRange){
 
-  data_subset <- alldata[alldata$place == place, ]
+  data_subset <- alldata[alldata$name == place, ]
   data_subset <- data_subset[data_subset$monthNamesShort == month, ]
   data_subset <- data_subset %>% select(yyyy, metric)
 
@@ -509,11 +512,12 @@ server <- function(input, output) {
   alldata <- load@alldata
   yearsOfInterest <- load@yearsOfInterest
   weatherStations <- load@weatherStations
+  weatherStationsProperCase <- load@weatherStationsProperCase
 
   # update dropdowns with data required
   updateSelectInput(inputId = "yearfrom", choices = yearsOfInterest)
   updateSelectInput(inputId = "yearto", choices = yearsOfInterest)
-  updateSelectInput(inputId = "place", choices= weatherStations)
+  updateSelectInput(inputId = "place", choices= weatherStationsProperCase)
   minYear <- min(yearsOfInterest)
   maxYear <- max(yearsOfInterest)
   updateSliderInput(inputId="year_range", min=minYear, max=maxYear, value=c(minYear, maxYear))
