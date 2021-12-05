@@ -382,14 +382,17 @@ monthlySummaryGenerate <- function(data, metric,
     filter(yyyy >= yearFrom) %>%
     filter(yyyy <= yearTo) %>%
     summarise(min=min(get(metric), na.rm = TRUE), max=max(get(metric), na.rm = TRUE),
-              estimates=sum(get(estimatedColumnName), na.rm = TRUE), provisional=sum(isProvisionalRecord, na.rm = TRUE))
+              estimates=sum(get(estimatedColumnName), na.rm = TRUE), provisional=sum(isProvisionalRecord, na.rm = TRUE),
+              mean=mean(get(metric), na.rm = TRUE), count=sum(is.na(get(metric)))
+    )
 
   #lets build up the sentences
+  a1 <- str_glue("The typical value of  {metricName} was {x$mean} ({scale}).")
   a <- str_glue("The {minAdjective} value of {metricName} was {x$min} ({scale}).")
   b <- str_glue("The {maxAdjective} value of {metricName} was {x$max} ({scale}).")
   c <- str_glue("The number of estimated data values were {x$estimates}.")
   d <- str_glue("The number of provisional data values were {x$provisional}.")
-  str_glue("{a}<br/>{b}<br/>{c}<br/>{d}")
+  str_glue("{a1}<br>{a}<br/>{b}<br/>{c}<br/>{d}")
 }
 
 #*** TABLE GENERATION CODE END  ****
@@ -437,8 +440,8 @@ ui <- fluidPage(
                            "Air Frost" = "af",
                            "Daylight" = "sun")),
 
-    selectizeInput("yearfrom", "year from", choices = c()),
-    selectizeInput("yearto", "years to", choices = c()),
+    #selectizeInput("yearfrom", "year from", choices = c()),
+    #selectizeInput("yearto", "years to", choices = c()),
     selectInput("month", "Month", choices = monthNamesShort),
     selectizeInput("place", "Location", choices = c()),
                    # Input: Slider for the number of bins ---
