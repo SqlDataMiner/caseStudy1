@@ -1,27 +1,12 @@
-# install packages if they don't exist.----
-if(!(require(plotly))){install.packages('plotly')}
+#lets make it easy for the teacher and install packages if they don't exist.
 if(!(require(shiny))){install.packages('shiny')}
 if(!(require(hash))){install.packages('hash')}
-if(!(require(leaflet))){install.packages('leaflet')}
-if(!(require(lubridate))){install.packages('lubridate')}
-if(!(require(shinythemes))){install.packages('shinythemes')}
-if(!(require(sf))){install.packages('sf')}
-if(!(require(rgbif))){install.packages('rgbif')}
-if(!(require(plyr))){install.packages('plyr')}
 if(!(require(tidyverse))){install.packages('tidyverse')}
 
-library(plyr)
 library(shiny)
-library(hash)
-library(leaflet)
-library(lubridate)
-library(plotly)
-library(shinythemes)
-library(sf)
-library(rgbif)
 library(tidyverse)
 
-# *** DOWNLOAD, EXTRACT, TRANSFORM CODE START *********----
+# *** DOWNLOAD, EXTRACT, TRANSFORM CODE START *********
 # Cache the data to speed up application startup time.
 outputdir = "data"
 useRDataIfExists <- TRUE
@@ -35,9 +20,8 @@ monthNames <- c("January", "February", "March", "April", "May",
                 "June", "July", "August", "September", "October",
                 "November", "December")
 
-monthNamesShortx <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+monthNamesShort <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
                      "Sep", "Oct", "Nov", "Dec")
-
 
 # seasons as defined by met office:   https://www.metoffice.gov.uk/weather/learn-about/met-office-for-schools/other-content/other-resources/our-seasons
 seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
@@ -45,10 +29,10 @@ seasons <- data.frame(season=c("winter","winter", "spring","spring", "spring",
                                "autumn", "winter"),
                       mm=seq(1, 12, 1),
                       monthName=monthNames,
-                      monthNamesShort=monthNamesShortx)
+                      monthNamesShort=monthNamesShort)
 
 #*** Class definitions ***
-setClass("LoadData", slots=list(alldata="data.frame", weatherStations="character", weatherStationsProperCase="character", yearsOfInterest="data.frame" ))
+setClass("LoadData", slots=list(alldata="data.frame", weatherStations="character", yearsOfInterest="data.frame" ))
 
 # *** Class Definitions ***
 # A class to hold each weather stations data
@@ -109,20 +93,6 @@ createDownloadInfo <- function (weatherStationName) {
   new("downloadInfo", url=str_glue("https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/{fileName}"), fileName=fileName)
 }
 
-locationNameGet <- function(placeName){
-  downloadNames <- lapply(weatherStations, formatWeatherStationNameForDownload)
-  ordinal <- -1
-  #I'm sure there is a more elegant approach than this but tempus fugit....
-  for (i in 1:length(downloadNames)){
-    if (placeName == downloadNames[i]){
-      ordinal <- i
-    }
-  }
-
-  #if lookup fails we will get an index error as index will be -1
-  weatherStations[ordinal]
-}
-
 # Reads in a file and parse the data to create an instance of weatherStationData (which is defined by the class)
 # The file is creatly whitespace seperated and to parse so that we do not lose the estimated values or the sun measuring instrumentation
 # we either need to:
@@ -136,10 +106,9 @@ parseWeatherStationData <- function(fileName) {
   fileHandle <- file(fileName, open="r")
   # Settings warnings to false as readLines expects a terminating end of line character which is not the data format.
   lines <- readLines(fileHandle, warn=FALSE)
+  name <- lines[1]
   locationLine <- lines[2]
   placeName <- str_replace_all(basename(fileName), 'data.txt', '')
-  #note we are not using the name from the file but the name from the list given.
-  name <- locationNameGet(placeName)
   #parse in the data we need for location split on whitespace
   locationVector <- unlist(strsplit(locationLine, split = "\\s+"))
   aboveMeanSeaLevelMeters <- as.numeric(str_replace_all(locationVector[8], '[^[:digit:]]', ''))
@@ -158,7 +127,7 @@ parseWeatherStationData <- function(fileName) {
   vectorLength <- length(lines) - numberOfHeaderlines + 1
   locationName <- rep(name, times=vectorLength - 1)
   latitude <- rep(lat, times=vectorLength - 1)
-  longitude <- rep(lon, times=vectorLength - 1)
+  longatude <- rep(lon, times=vectorLength - 1)
   alt <- rep(aboveMeanSeaLevelMeters, times=vectorLength - 1)
   place <- rep(placeName, times=vectorLength - 1)
   years <- c(vectorLength)
@@ -211,7 +180,7 @@ parseWeatherStationData <- function(fileName) {
   }
 
   #name columns with scales
-  dataFrame <- data.frame(name=locationName, place=place, lat=latitude, long=longitude, alt = alt,
+  dataFrame <- data.frame(name=locationName, place=place, lat=latitude, long=longatude, alt = alt,
                           yyyy=years, mm=months, tmax=maxTemp,
                           wasMaxTempEstimated=wasMaxTempEstimated, tmin=minTemp,
                           wasMinTempEstimated=wasMinTempEstimated, af=airFrost,
@@ -265,19 +234,15 @@ dataLoad <- function(outputDir){
 
     weatherStationsOrdered <- sort(unlist(lapply(weatherStations, formatWeatherStationNameForDownload)))
 
-    weatherStationsProperCase <- sort(weatherStations)
-
-    save(unifiedWeatherDataSet, yearsOfInterest, weatherStationsOrdered, weatherStationsProperCase, file=rDataFile)
+    save(unifiedWeatherDataSet, yearsOfInterest, weatherStationsOrdered, file=rDataFile)
   }
 
-  new("LoadData", alldata = unifiedWeatherDataSet, weatherStations = weatherStationsOrdered,
-      weatherStationsProperCase = weatherStationsProperCase, yearsOfInterest = yearsOfInterest)
+  new("LoadData", alldata = unifiedWeatherDataSet, weatherStations = weatherStationsOrdered, yearsOfInterest = yearsOfInterest)
 }
 
 # *** DOWNLOAD, EXTRACT, TRANSFORM CODE END *********
 
-#*** TABLE GENERATION CODE START  ****----
-
+#*** TABLE GENERATION CODE START  ****
 
 # create a class for holding all the metric releated information
 setClass("metricDefinition", slots=list(metricName="character", aggregation="function", format="function",
@@ -310,29 +275,15 @@ formatFunction <- function(metric){
 
 # Functions which create output data
 seasonalSummaryTable <- function(data, yearFrom, yearTo, metric, placeName) {
- x <- data %>%
+  data %>%
     filter(yyyy >= yearFrom) %>%
     filter(yyyy <= yearTo) %>%
+    # filter(place == placeName) %>%
     group_by(name, season, yyyy) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), yyyy = as.integer(yyyy)) %>%
     pivot_wider(names_from=season, values_from=typical)%>%
     arrange(name, yyyy)
-
-  seasonVector <- c("spring", "summer", "autumn", "winter")
-
-  columns <- colnames(x)
-  afterCol <- "yyyy"
-  for(i in 1:length(seasonVector)) {
-    season <- seasonVector[i]
-    if (season%in%columns){
-      x <- x %>%
-        relocate(!!as.symbol(season), .after=!!as.symbol(afterCol))
-    }
-    afterCol<- season
-  }
-
-  x
 }
 
 seasonalHeaderGenerate <- function(metric) {
@@ -394,6 +345,7 @@ monthlySummaryTable <- function(data, yearFrom, yearTo, metric, placeName) {
   x <- data %>%
     filter(yyyy >= yearFrom) %>%
     filter(yyyy <= yearTo) %>%
+    #filter(place == placeName) %>%
     group_by(name, monthNamesShort, yyyy) %>%
     summarise(typical=aggregationFunction(metric)(get(metric)), .groups = "keep") %>%
     mutate(typical=formatFunction(metric)(typical), yyyy = as.integer(yyyy)) %>%
@@ -408,10 +360,10 @@ monthlySummaryTable <- function(data, yearFrom, yearTo, metric, placeName) {
   columns <- colnames(x)
   afterCol <- "yyyy"
   for(i in 1:length(monthNamesShort)) {
-   month <- monthNamesShort[i]
+    month <- monthNamesShort[i]
     if (month%in%columns){
-     x <- x %>%
-       relocate(!!as.symbol(month), .after=!!as.symbol(afterCol))
+      x <- x %>%
+        relocate(!!as.symbol(month), .after=!!as.symbol(afterCol))
     }
     afterCol<- month
   }
@@ -471,96 +423,65 @@ monthlySummaryGenerate <- function(data, metric,
 
 #*** TABLE GENERATION CODE END  ****
 
+#*** TIME SERIES PLOT START ****
+timeSeriesPlot <- function (alldata, place, month, metric, yearRange){
 
-
-
-#** Month Comparison Plot----
-mmcomparisonplot<-function(alldata, place, metric)
-{
   data_subset <- alldata[alldata$place == place, ]
-  #data_subset <- data_subset[data_subset$monthNamesShort == month, ]
-  data_subset <- data_subset %>% select(metric, mm)
+  data_subset <- data_subset[data_subset$monthNamesShort == month, ]
+  data_subset <- data_subset %>% select(yyyy, metric)
 
-  #mytitle<-paste0() "Weather Station": paste0() "Each Month"
-  ggplot(data_subset) +aes(mm, y =!!as.symbol(metric))+
-    geom_point(aes(size=!!as.symbol(metric), colour=!!as.symbol(metric)))+
-    labs(title = "Please select the WEATHER MEASURE and the LOCATION.\n The month and year range are not used for this graph.", caption = "This data was gathered from the website https://www.metoffice.gov.uk/research/climate/maps-and-data/historic-station-data.", x= "", y = "") +
-    scale_color_gradient(low = "blue", high = "red")+
-    theme(axis.text.y = element_text(size = "15", angle = 0),
-          axis.text.x = element_text(size = "15", angle = 0),
-          legend.title=element_blank(),
-          panel.background =element_rect("light blue"), panel.grid.minor = element_blank()) +
-    scale_x_discrete( limits = month.abb)+scale_size_continuous(guide="none")
-  #caption for source of data
+  ggplot(data_subset)+
+    aes(x=yyyy, y = !!as.symbol(metric))+
+    geom_line(color = 'blue')+ labs(y = metric, x = "Years (CE)") +
+    xlim(yearRange)
 }
 
-textForPlotTwo <- function(place) {
-  str_glue("The place selected is: {place}")
-}
-#,
 
-#*** SHINY/UI CODE START ****----
+#*** TIME SERIES PLOT END ****
+
+
+#*** SHINY/UI CODE START ****
 # Define the user interface
 # Note the commas are required for arguments to functions.
 # Shiny uses a fluent interface style of programming whereby functions
 # such as "fluidPage, "sidePanel", mainPanel etc take functions
 # as arguments hence the commas can seem misleading at times.
-col <- c("deepskyblue", "gold1", "red2")
-pal <- colorNumeric(palette = col, domain = NULL)
-
 ui <- fluidPage(
   tags$head(
     tags$style(HTML("
        tr:nth-child(even) {
             background-color: Lightblue;
         }
-    "))),
-
-  theme = shinytheme("sandstone"),
-  titlePanel(
-    h1("Weather in time and space", style = "padding-bottom: 20px")
+    "))
   ),
+
+  titlePanel("Primary school weather investigation"),
 
   sidebarPanel(
     selectInput(inputId = "investigationMetric",
                 label = "Weather Measure",
-                choices =c("Rainfall (mm)" = "rain",
-                           "Max Temperature (C)" = "tmax",
-                           "Min Temperature (C)" = "tmin",
-                           "Air Frost (Days)" = "af",
-                           "Daylight (Hours)" = "sun")),
+                choices =c("Rainfall" = "rain",
+                           "Max Temperature" = "tmax",
+                           "Min Temperature" = "tmin",
+                           "Air Frost" = "af",
+                           "Daylight" = "sun")),
+    selectInput("month", "Month", choices = monthNamesShort),
+    selectizeInput("place", "Location", choices = c()),
     # Input: Slider for the number of bins ---
-    sliderInput(inputId = "yyyy",
-                label = "Choose Year:",
-                min = 1853, max = 2021, value = 2021, step = 1),
-
-    selectInput("mm", "Choose month:",
-                c("January" = 1,
-                  "February" = 2,
-                  "March" = 3,
-                  "April" = 4,
-                  "May" = 5,
-                  "June" = 6,
-                  "July" = 7,
-                  "August" = 8,
-                  "September" = 9,
-                  "October" = 10,
-                  "November" = 11,
-                  "December" = 12
-                )),
-    leafletOutput("map", "100%", 400)
+    sliderInput(inputId = "year_range",
+                label = "Year Range:",
+                min = 0,
+                max = 0,
+                value = c(0, 0),
+                step=1,
+                dragRange = TRUE)
   ),
   mainPanel(
     tabsetPanel(
-      tabPanel("TimeSeries",
-               h3("Click on a circle on the map to see how the chosen weather measure was changing over time", style = "padding-bottom: 20px"),
-               fluidRow(verbatimTextOutput("Click_text")),
-               plotlyOutput(outputId = "timeSeries")
 
+      tabPanel("Time Series Plot",
+               plotOutput("plot")
       ),
-      tabPanel("Month Comparison Chart", plotOutput("plot2"),
-               htmlOutput("textForPlot2")
-               ),
       tabPanel("Tables of data",
                htmlOutput("seasonsHeader"),
                htmlOutput("seasonsDescription"),
@@ -571,133 +492,62 @@ ui <- fluidPage(
                tableOutput("monthlyTable"),
                htmlOutput("monthlySummary")
 
-      )    )))
+      )
+    )
+  )
+
+)
 
 # Define the "server": where the computations are done/plots generated etc.
 # given the input values (input$interval, input$lvl, input$method)
 # from the user interface
 
-server <- function(input, output, session) {
+server <- function(input, output) {
 
   #Load the data and assign to variables
   load <- dataLoad(outputdir)
   alldata <- load@alldata
   yearsOfInterest <- load@yearsOfInterest
   weatherStations <- load@weatherStations
-  weatherStationsProperCase <- load@weatherStationsProperCase
-
-  latitude <- alldata$lat
-  longitude <- alldata$long
 
   # update dropdowns with data required
-  updateSelectInput(inputId = "place", choices= weatherStationsProperCase)
+  updateSelectInput(inputId = "yearfrom", choices = yearsOfInterest)
+  updateSelectInput(inputId = "yearto", choices = yearsOfInterest)
+  updateSelectInput(inputId = "place", choices= weatherStations)
+  minYear <- min(yearsOfInterest)
+  maxYear <- max(yearsOfInterest)
+  updateSliderInput(inputId="year_range", min=minYear, max=maxYear, value=c(minYear, maxYear))
 
   #create seasonal tabular data and commentry
   seasonTableGeneration <- reactive({
-    seasonalSummaryTable(alldata, input$yyyy, input$yyyy, input$investigationMetric, input$place)
+    seasonalSummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric, input$place)
   })
 
   output$seasonsTable <- renderTable({ seasonTableGeneration() })
   output$seasonsHeader <-renderText({  seasonalHeaderGenerate(input$investigationMetric)  })
   output$seasonsDescription <- renderText({seasonalDescriptionGenerate(input$investigationMetric)})
   output$seasonsSummary <- renderText(seasonalSummaryGenerate(alldata, input$investigationMetric,
-                                                              input$yyyy, input$yyyy))
+                                                              input$year_range[1], input$year_range[2]))
 
   #create monthly tabular data and commentry
   monthlyTableGeneration <- reactive({
-    monthlySummaryTable(alldata, input$yyyy, input$yyyy, input$investigationMetric, input$place)
+    monthlySummaryTable(alldata, input$year_range[1], input$year_range[2], input$investigationMetric, input$place)
   })
   output$monthlyTable <- renderTable({monthlyTableGeneration()})
   output$monthlyHeader <-renderText({monthlyHeaderGenerate(input$investigationMetric)})
   output$monthlyDescription <- renderText({monthlyDescriptionGenerate(input$investigationMetric)})
   output$monthlySummary <- renderText({monthlySummaryGenerate(alldata, input$investigationMetric,
-                                                              input$yyyy, input$yyyy)})
+                                                              input$year_range[1], input$year_range[2])})
 
 
-  #####Map backend####
-  map <- createLeafletMap(session, 'map')
-  session$onFlushed(once=T, function(){
+  timeSeriesPlotGeneration <- reactive({
+    timeSeriesPlot(alldata, input$place, input$month, input$investigationMetric, input$year_range)
+  })
 
-    map$addCircleMarker(lat = latitude,
-                        lng = longitude)
-    output$map <- renderLeaflet({
-      leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-        setView(lng = -1.47, lat = 52.3, zoom = 6.4) %>%
-        addProviderTiles(providers$CartoDB) %>%
-        addCircleMarkers(data = (filtered_data <- alldata %>%
-          filter(yyyy==input$yyyy, mm==input$mm)),
-                         layerId=filtered_data$place,
-                         color = ~pal(get(input$investigationMetric)),
-                         group = "circles",
-                         popup = paste(
-                           "Station:", filtered_data$place, "<br/>",
-                           "Month:", input$mm, "<br/>",
-                           "Year:", input$yyyy,"<br/>",
-                           "Max. temp.:",filtered_data$tmax,"<br/>",
-                           "Min. temp.:",filtered_data$tmin,"<br/>",
-                           "Rain:",filtered_data$rain
-                         ),
-                         opacity = 1, fillOpacity = 0.9)%>%
-        addLegend(
-          data = (filtered_data <- alldata %>%
-            filter(yyyy==input$yyyy, mm==input$mm)),
-          "bottomleft",
-          pal = pal,
-          values = ~get(input$investigationMetric),
-          group = "circles",
-          na.label = "NA",
-          opacity = .9,
-          title = input$investigationMetric
-        )
-    })
-
-    observe({
-      click<-input$map_marker_click
-      if(is.null(click))
-        return()
-      text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng,
-                  "Station:", click$id,
-                  "Month:", input$mm,
-                  "Year:", input$yyyy
-      )
-
-      # update the monthly comparision chart
-      output$plot2 <- renderPlot({ mmcomparisonplot(alldata, click$id, input$investigationMetric)  })
-      output$textForPlot2 <- renderText(textForPlotTwo(click$id))
-
-      text2<-paste("You've selected: ", click$id)
-      map$clearPopups()
-      map$showPopup( click$lat, click$lng, click$id, text)
-      output$Click_text<-renderText({
-        text2
-      })
-      ###Time-series backend###
-      output$timeSeries <- renderPlotly(
-        plot_ly( data=(filtered_data2 <- alldata %>%
-          filter(place==click$id,  mm==input$mm)),
-                 x = filtered_data2$yyyy,
-                 y = ~get(input$investigationMetric),
-                 cheat = str(input$investigationMetric),
-                 hovertemplate = "Year: %{x}<br> Measure: %{y}<br><extra></extra>",
-
-                 type = 'scatter',
-                 # mode = 'lines',
-                 line = list(color = '#251d5a', width = 1.5)
-        ) %>%
-          layout(
-            title = paste("Weather change in", click$id , "over time"),
-            xaxis = list(title = "Year"),
-            yaxis = list(title = input$investigationMetric)
-          )
-      )
-    })
-  }
-  )
-
+  output$plot <- renderPlot({ timeSeriesPlotGeneration()  })
 
 }
 # Run the application
 shinyApp(ui = ui, server = server)
 
 #*** SHINY/UI CODE END ****
-
