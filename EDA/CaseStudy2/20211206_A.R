@@ -99,7 +99,7 @@ locationNameGet <- function(placeName){
   #I'm sure there is a more elegant approach than this but tempus fugit....
   for (i in 1:length(downloadNames)){
     if (placeName == downloadNames[i]){
-      ordinal = i
+      ordinal <- i
     }
   }
 
