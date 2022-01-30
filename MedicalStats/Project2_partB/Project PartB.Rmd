@@ -14,25 +14,33 @@ data <- load("Data/E_PartB_data.RData")
 # Question 1
 
 # Question 1.1
-```{r include=TRUE, results='asis'}
-library(ggfortify) # so we can use fortify to create a datatable and out put summary in a prettier format
+```{r include=TRUE, results='asis',figures-side, fig.show="hold", out.width="50%"}
+library(knitr) # for prettier tables
+library(ggfortify) # so we can use fortify to create a datatable required for knitr
+options(digits = 3) # let's keep output to sensible number of places
 trialA <- q1dat %>% filter(drug == "A")
 trialB <- q1dat %>% filter(drug == "B")
 
 trialA.sv <- Surv(time=trialA$time, event=trialA$status, type="right")
 trialASurv <- survfit(trialA.sv ~ 1, data = trialA)
 tableA <- fortify(trialASurv)
-print(knitr::kable(tableA))
+# TODO NEED TO REName columns on table
+print(kable(tableA))
+summary(trialASurv)
+
 
 trialB.sv <- Surv(time=trialB$time, event=trialB$status, type="right")
 trialBSurv <- survfit(trialB.sv ~ 1, data = trialB)
 tableB <- fortify(trialBSurv)
-print(knitr::kable(tableB))
+print(kable(tableB))
 
-plotA <- plot(trialASurv, xlab ="months", ylab = "probablity of survival", main = "Kaplan-Meier  plot of trial A drug" )
-plotB <- plot(trialBSurv, xlab ="months", ylab = "probablity of survival", main = "Kaplan-Meier  plot of trial B drug" )
+par(mar = c(4, 4, .1, .1))
+plot(trialASurv, xlab ="months", ylab = "probablity of survival")
+title("Kaplan-Meier  plot of trial A drug", line= -1 )
+plot(trialBSurv, xlab ="months", ylab = "probablity of survival")
+title( "Kaplan-Meier  plot of trial B drug", line= -1 )
 
-#knitr::kable(list(tableA, tableB))
+
 ```
 
 
