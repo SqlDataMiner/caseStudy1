@@ -14,8 +14,9 @@ data <- load("Data/E_PartB_data.RData")
 # Question 1
 
 # Question 1.1
-```{r include=TRUE, results='asis',figures-side, fig.show="hold", out.width="50%"}
+```{r include=TRUE, results='asis', figures-side, fig.show="hold", out.width="50%"}
 library(knitr) # for prettier tables
+library(pander) #for adding pandoc headers
 library(ggfortify) # so we can use fortify to create a datatable required for knitr
 options(digits = 3) # let's keep output to sensible number of places
 trialA <- q1dat %>% filter(drug == "A")
@@ -23,15 +24,14 @@ trialB <- q1dat %>% filter(drug == "B")
 
 trialA.sv <- Surv(time=trialA$time, event=trialA$status, type="right")
 trialASurv <- survfit(trialA.sv ~ 1, data = trialA)
-tableA <- fortify(trialASurv)
-# TODO NEED TO REName columns on table
+tableA <- fortify(trialASurv) %>% rename(survival=surv, "lower 95% CI"=lower, "upper 95% CI"= upper) %>% select(1, 2, 3, 5, 6, 8, 7)
+pandoc.header(list("Kaplan-Meier Estimate of Survivor Function for trial drug A"), level = 2)
 print(kable(tableA))
-summary(trialASurv)
-
 
 trialB.sv <- Surv(time=trialB$time, event=trialB$status, type="right")
 trialBSurv <- survfit(trialB.sv ~ 1, data = trialB)
-tableB <- fortify(trialBSurv)
+tableB <- fortify(trialBSurv) %>% rename(survival=surv, "lower 95% CI"=lower, "upper 95% CI"= upper) %>% select(1, 2, 3, 5, 6, 8, 7)
+pandoc.header(list("Kaplan-Meier Estimate of Survivor Function for trial drug B"), level = 2)
 print(kable(tableB))
 
 par(mar = c(4, 4, .1, .1))
