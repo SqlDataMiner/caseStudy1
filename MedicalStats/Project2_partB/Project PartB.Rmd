@@ -5,12 +5,36 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(survival)
+library(dplyr)
+library(ggplot2)
+data <- load("Data/E_PartB_data.RData")
 ```
 
 # Question 1
 
 # Question 1.1
-Answer to Question 1.1 here
+```{r include=TRUE, results='asis'}
+library(ggfortify) # so we can use fortify to create a datatable and out put summary in a prettier format
+trialA <- q1dat %>% filter(drug == "A")
+trialB <- q1dat %>% filter(drug == "B")
+
+trialA.sv <- Surv(time=trialA$time, event=trialA$status, type="right")
+trialASurv <- survfit(trialA.sv ~ 1, data = trialA)
+tableA <- fortify(trialASurv)
+print(knitr::kable(tableA))
+
+trialB.sv <- Surv(time=trialB$time, event=trialB$status, type="right")
+trialBSurv <- survfit(trialB.sv ~ 1, data = trialB)
+tableB <- fortify(trialBSurv)
+print(knitr::kable(tableB))
+
+plotA <- plot(trialASurv, xlab ="months", ylab = "probablity of survival", main = "Kaplan-Meier  plot of trial A drug" )
+plotB <- plot(trialBSurv, xlab ="months", ylab = "probablity of survival", main = "Kaplan-Meier  plot of trial B drug" )
+
+#knitr::kable(list(tableA, tableB))
+```
+
 
 # Question 1.2
 Answer to Question 1.2 here
