@@ -45,7 +45,7 @@ title( "Kaplan-Meier  plot of trial B drug", line= -1 )
 
 
 # Question 1.2
-Answer to Question 1.2 here
+Things to comments on: earliest death, average death, calculate rough quartiles. longest death. Look at error bounds. Number of people in the study. number who were censored.
 
 # Question 1.3
 Answer to Question 1.3 here
