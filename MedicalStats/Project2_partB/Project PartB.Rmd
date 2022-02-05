@@ -59,6 +59,24 @@ lungcancer.sv <- Surv(time=q2$time, event=q2$stat, type="right")
 lungcancer.regexp <- survreg(lungcancer.sv ~ q2$sex + q2$exer + q2$smok + q2$trea + q2$age, dist="exponential")
 summary(lungcancer.regexp)
 ```
+Therefore the accelerated failure time model with an expoential failure time distribution and explanatory variables **x** is:
+
+$$ \begin{aligned}
+S(t;\mathbf{x}) &= exp\{{-t\: exp(-(\beta_0 + \beta_1x_{1} + \beta_2x_{2} + \beta_3x_{3} + \beta_4x_{4} + \beta_5x_{5}))}\}\\
+&= exp\{{-t\: exp(-(\beta_0 + \beta_1x_{sex} + \beta_2x_{exer} + \beta_3x_{smok} + \beta_4x_{trea} + \beta_5x_{age}))}\}\\
+&= exp\{{-t\: exp(-(0.5017 - 0.5328x_{sex} - 0.2566x_{exer} - 0.8821x_{smok} + 0.8144x_{trea} - 0.0113x_{age}))}\}\\
+&= exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok} - 0.8144x_{trea} + 0.0113x_{age})}\}\\
+\end{aligned}
+$$
+
+Variable     Coding
+--------    -------------------------------------------------------------
+sex         0 = male; 1 = female
+exer        0 = some exercise; 1 = rarely exercise
+smok        0 = not current smoker; 1 = current smoker
+trea        0 = treatment A; 1 = treatment B
+age         age of patient centred on 50 years (i.e. 60 years old is 10)
+t           survival time (years)
 
 # Question 2.2
 Answer to Question 2.2 here
