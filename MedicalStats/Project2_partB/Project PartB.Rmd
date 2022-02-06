@@ -96,7 +96,7 @@ $$\begin{aligned}
 \end{aligned}
 $$
 
-The hazard function $h(t; \mathbf{x}) = exp\{\mathbf{B}'x\}h_0(t)$ where $h_0(t) is the baseline hazard function.  Let $h_a(t; \mathbf{x})$ and $h_b(t; \mathbf{x})$ be the respective hazard functions of treatment A and treatment B, which are:
+The hazard function $h(t; \mathbf{x}) = exp\{\mathbf{B}'\mathbf{x}\}h_0(t)$ where $h_0(t) is the baseline hazard function.  Let $h_a(t; \mathbf{x})$ and $h_b(t; \mathbf{x})$ be the respective hazard functions of treatment A and treatment B, which are:
 $$
 \begin{aligned}
 h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
@@ -122,7 +122,7 @@ $$
 &= (1.56, 3.28)
 \end{aligned}
 $$
-Interpreting the confidence interval of (1.56, 3.28) means that at the $95\%$ confidence level that the hazard for patients on treatment B could be and where between just over one and half times and just over three and a quarter times that of the hazard for treatment A.
+Interpreting the confidence interval of (1.56, 3.28) means that at the $95\%$ confidence level that the hazard for patients on treatment B could be anywhere between just over one and half times and just over three and a quarter times that of the hazard for treatment A.
 
 # Question 2.3
 Answer to Question 2.3 here
