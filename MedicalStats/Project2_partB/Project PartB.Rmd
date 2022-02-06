@@ -88,10 +88,10 @@ $$
 
 # Question 2.2
 
-As $z = \beta_4 /(std. error) = 4.29$ and $4.29 > 1.96$ then there is overwhelming evidence that the treatment has an effect. Considering the proprtional hazards related to treatment A and B we know that $h(t; x |x_1=1)/h(t; x | x_1=0) = exp\:\beta_4$.  As $\beta_4 > 0$ then treatment B ($x_1 = 1$) increases the hazard relative to treatment A ($x_1 = 0$).
+As $z = \beta_1 /(std. error) = 4.29$ and $4.29 > 1.96$ then there is overwhelming evidence that the treatment has an effect. Considering the proprtional hazards related to treatment A and B we know that $h(t; x |x_1=1)/h(t; x | x_1=0) = exp\:\beta_1$.  As $\beta_1 > 0$ then treatment B ($x_1 = 1$) increases the hazard relative to treatment A ($x_1 = 0$).
 
 $$\begin{aligned}
-\text{The 95}\% \text{ confidence interval for treatment }\beta_4\text{ is: }&= \hat{\beta_4} \pm 1.96 \times s.e(\hat{\beta_4}) \\
+\text{The 95}\% \text{ confidence interval for treatment }\beta_1\text{ is: }&= \hat{\beta_1} \pm 1.96 \times s.e(\hat{\beta_4}) \\
 &= 0.8144 \pm 1.96 \times 0.1898 \\
 &= (0.44, 1.19)
 \end{aligned}
@@ -100,8 +100,8 @@ $$
 The hazard function $h(t; \mathbf{x}) = exp\{\mathbf{B}'\mathbf{x}\}h_0(t)$ where $h_0(t) is the baseline hazard function.  Let $h_a(t; \mathbf{x})$ and $h_b(t; \mathbf{x})$ be the respective hazard functions of treatment A and treatment B, which are:
 $$
 \begin{aligned}
-h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
-h_b(t;\mathbf{x}) &= h_0(t)exp\{\beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5\}\\
+h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_1\times 0 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
+h_b(t;\mathbf{x}) &= h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5\}\\
 \end{aligned}
 $$
 
