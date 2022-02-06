@@ -78,7 +78,6 @@ trea        0 = treatment A; 1 = treatment B
 age         age of patient centred on 50 years (i.e. 60 years old is 10)
 t           survival time (years)
 
-# Question 2.2
 Given the coding then the model will include the treatment variable for those on treatment B and exclude it for those on treatment A. Let $S_a(t;\mathbf{x})$ be the model for treatment A and $S_b(t;\mathbf{x})$ the model for treatment B, then this gives:
 
 $$ \begin{aligned}
@@ -86,6 +85,8 @@ S_a(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0
 S_b(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 - 0.8144x_{trea} + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok} + 0.0113x_{age})}\}\\
 \end{aligned}
 $$
+
+# Question 2.2
 
 As $z = \beta_4 /(std. error) = 4.29$ and $4.29 > 1.96$ then there is overwhelming evidence that the treatment has an effect. Considering the proprtional hazards related to treatment A and B we know that $h(t; x |x_1=1)/h(t; x | x_1=0) = exp\:\beta_4$.  As $\beta_4 > 0$ then treatment B ($x_1 = 1$) increases the hazard relative to treatment A ($x_1 = 0$).
 
@@ -99,15 +100,15 @@ $$
 The hazard function $h(t; \mathbf{x}) = exp\{\mathbf{B}'\mathbf{x}\}h_0(t)$ where $h_0(t) is the baseline hazard function.  Let $h_a(t; \mathbf{x})$ and $h_b(t; \mathbf{x})$ be the respective hazard functions of treatment A and treatment B, which are:
 $$
 \begin{aligned}
-h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
-h_b(t;\mathbf{x}) &= h_0(t)exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok} - 0.8144x_{trea} + 0.0113x_{age})}\}\\
+h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
+h_b(t;\mathbf{x}) &= h_0(t)exp\{\beta_1x_1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5\}\\
 \end{aligned}
 $$
 
 Then the hazard ratio of treatment A versus treatment B is given by:
 $$
 \begin{aligned}
-\frac{h_b(t;\mathbf{x})}{h_a(t;\mathbf{x})}  &= \frac{h_0(t)exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok} - 0.8144x_{trea} + 0.0113x_{age})}\}}{h_0(t)exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok} + 0.0113x_{age})}\}}\\
+\frac{h_b(t;\mathbf{x})}{h_a(t;\mathbf{x})}  &= \frac{h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5\}}{h_0(t)exp\{ \beta_1\times 0 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}}\\
  &= \frac{h_o(t)exp\{\beta_1\times 1\}}{h_0(t)exp\{\beta_1\times 0\}} \\
  &=exp\{\beta_1\}\\
  &= exp\{0.8144\} \\
