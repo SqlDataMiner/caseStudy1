@@ -100,7 +100,7 @@ $$
 The hazard function $h(t; \mathbf{x}) = exp\{\mathbf{B}'\mathbf{x}\}h_0(t)$ where $h_0(t) is the baseline hazard function.  Let $h_a(t; \mathbf{x})$ and $h_b(t; \mathbf{x})$ be the respective hazard functions of treatment A and treatment B, which are:
 $$
 \begin{aligned}
-h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_1\times 0 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
+h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}\\
 h_b(t;\mathbf{x}) &= h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5\}\\
 \end{aligned}
 $$
@@ -109,7 +109,7 @@ Then the hazard ratio of treatment A versus treatment B is given by:
 $$
 \begin{aligned}
 \frac{h_b(t;\mathbf{x})}{h_a(t;\mathbf{x})}  &= \frac{h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5\}}{h_0(t)exp\{ \beta_1\times 0 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 + \beta_5x_5 \}}\\
- &= \frac{h_o(t)exp\{\beta_1\times 1\}}{h_0(t)exp\{\beta_1\times 0\}} \\
+ &= \frac{h_o(t)exp\{\beta_1\times 1\}}{h_0(t)} \\
  &=exp\{\beta_1\}\\
  &= exp\{0.8144\} \\
  &= 2.26 \\
