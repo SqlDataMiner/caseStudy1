@@ -87,10 +87,10 @@ S_b(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0
 \end{aligned}
 $$
 
-As $z = \beta_4 /(std. error) = 4.29$ and $4.29 > 1.96$ then there is overwhelming evidence that the treatment has an effect. Considering the proprtional hazards related to treatment A and B we know that $h(t;x_4=1)/h(t; x_4=0) = exp\:\beta_4$.  As $\beta_4 > 0$ then treatment B ($x_4 = 1$) increases the hazard relative to treatment A ($x_4 = 0$).
+As $z = \beta_4 /(std. error) = 4.29$ and $4.29 > 1.96$ then there is overwhelming evidence that the treatment has an effect. Considering the proprtional hazards related to treatment A and B we know that $h(t; x |x_4=1)/h(t; x | x_4=0) = exp\:\beta_4$.  As $\beta_4 > 0$ then treatment B ($x_4 = 1$) increases the hazard relative to treatment A ($x_4 = 0$).
 
 $$\begin{aligned}
-\text{The 95}\% \text{ confidence interval for }\beta_4\text{ is: }&= \hat{\beta_4} \pm 1.96 \times s.e(\hat{\beta_4}) \\
+\text{The 95}\% \text{ confidence interval for treatment }\beta_4\text{ is: }&= \hat{\beta_4} \pm 1.96 \times s.e(\hat{\beta_4}) \\
 &= 0.8144 \pm 1.96 \times 0.1898 \\
 &= (0.442, 1.1864)
 \end{aligned}
