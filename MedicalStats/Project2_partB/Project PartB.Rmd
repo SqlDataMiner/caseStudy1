@@ -1,6 +1,7 @@
 ---
 title: "MAS61002 Project Part B  \n Registration Number: 210138744"
 geometry: "left=1cm,right=1cm,top=2cm,bottom=2cm"
+header-includes: \usepackage{relsize}
 output: pdf_document
 ---
 
@@ -158,6 +159,10 @@ The median life expectancies demonstrate what we would expect from the coefficie
 * Smokers tend to have a shorter life expectancy than non-smokers.
 
 # Question 2.4
-Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We need to assess which covariates are consistent across all groups and which are not.
+Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We know that there are significant differences between treatment A and treatment B; therefore to avoid Simpson's paradox we must perform two hypotheses, namely:
+
+* $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment A})}{h_{male}(t;\mathbf{x}|\text{treatment A})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment A})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment A})}}$
+* $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment B})}{h_{male}(t;\mathbf{x}|\text{treatment B})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment B})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment B})}}$
+
 
 
