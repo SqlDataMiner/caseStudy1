@@ -159,10 +159,12 @@ The median life expectancies demonstrate what we would expect from the coefficie
 * Smokers tend to have a shorter life expectancy than non-smokers.
 
 # Question 2.4
-Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We know that there are significant differences between treatment A and treatment B; therefore to avoid Simpson's paradox we must perform two hypotheses, namely:
+Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We know that there are significant differences between treatment A and treatment B; therefore to avoid Simpson's paradox we must perform two hypothesis tests, namely:
 
-* $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment A})}{h_{male}(t;\mathbf{x}|\text{treatment A})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment A})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment A})}}$
-* $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment B})}{h_{male}(t;\mathbf{x}|\text{treatment B})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment B})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment B})}}$
+* Null Hypothesis for Treatment A: $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment A})}{h_{male}(t;\mathbf{x}|\text{treatment A})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment A})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment A})}}$
+
+
+* Null Hypothesis for Treatment B: $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment B})}{h_{male}(t;\mathbf{x}|\text{treatment B})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment B})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment B})}}$
 
 
 
