@@ -127,7 +127,7 @@ $$
 Interpreting the confidence interval of (1.56, 3.28) means that at the $95\%$ confidence level that the hazard for patients on treatment B could be anywhere between just over one and half times and just over three and a quarter times that of the hazard for treatment A.
 
 # Question 2.3
-The median is calculated as follows where $median_a$ and $median_b$ be the median survival times for treatments A and B respectively. Note that age is not significant in the model so is removed.:
+The median is calculated as follows where $median_a$ and $median_b$ be the median survival times for treatments A and B respectively. the reader is reminded that age is not significant in the model so was not included.:
 $$
 \begin{aligned}
 \text{median}_a &= log(2)exp\{\beta_0 + \beta_1\times x_1 + \beta_2\times x_2 + \beta_3\times x_3 + \beta_4\times x_4 } \\
