@@ -1,6 +1,6 @@
 ---
 title: "MAS61002 Project Part B  \n Registration Number: 210138744"
-geometry: margin=0.5cm
+geometry: "left=1cm,right=1cm,top=2cm,bottom=2cm"
 output: pdf_document
 ---
 
@@ -67,6 +67,8 @@ S(t;\mathbf{x}) &= exp\{{-t\: exp(-(\beta_0 + \beta_1x_{1} + \beta_2x_{2} + \bet
 &= exp\{{-t\: exp(-(\beta_0 + \beta_1x_{trea} + \beta_2x_{sex} + \beta_3x_{exer} + \beta_4x_{smok} + \beta_5x_{age}))}\}\\
 &= exp\{{-t\: exp(-(0.5017 + 0.8144x_{trea} - 0.5328x_{sex} - 0.2566x_{exer} - 0.8821x_{smok} - 0.0113x_{age}))}\}\\
 &= exp\{{-t\: exp(-0.5017 - 0.8144x_{trea} + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok} + 0.0113x_{age})}\}\\
+& \text{However age (p=0.15) and exercise (p=0.18) are not significant in the model excluding those from the model gives:}\\
+&= exp\{{-t\: exp(-0.5017 - 0.8144x_{trea} + 0.5328x_{sex} + 0.8821x_{smok})}\}\\
 \end{aligned}
 $$
 
@@ -79,11 +81,11 @@ trea        0 = treatment A; 1 = treatment B
 age         age of patient centred on 50 years (i.e. 60 years old is 10)
 t           survival time (years)
 
-Given the coding then the model will include the treatment variable for those on treatment B and exclude it for those on treatment A. However age is not significant in the model (p=0.15) so we will exclude that from the model. Let $S_a(t;\mathbf{x})$ be the model for treatment A and $S_b(t;\mathbf{x})$ the model for treatment B, then this gives:
+Given the coding then the model will include the treatment variable for those on treatment B and exclude it for those on treatment A.  Let $S_a(t;\mathbf{x})$ be the model for treatment A and $S_b(t;\mathbf{x})$ the model for treatment B, then this gives:
 
 $$ \begin{aligned}
-S_a(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok})}\}\\
-S_b(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 - 0.8144x_{trea} + 0.5328x_{sex} + 0.2566x_{exer} + 0.8821x_{smok})}\}\\
+S_a(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 + 0.5328x_{sex} + 0.8821x_{smok})}\}\\
+S_b(t;\mathbf{x}) &= exp\{{-t\: exp(-0.5017 - 0.8144x_{trea} + 0.5328x_{sex} + 0.8821x_{smok})}\}\\
 \end{aligned}
 $$
 
@@ -101,15 +103,15 @@ $$
 The hazard function $h(t; \mathbf{x}) = exp\{\mathbf{B}'\mathbf{x}\}h_0(t)$ where $h_0(t) is the baseline hazard function.  Let $h_a(t; \mathbf{x})$ and $h_b(t; \mathbf{x})$ be the respective hazard functions of treatment A and treatment B, which are:
 $$
 \begin{aligned}
-h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_2x_2 + \beta_3x_3 + \beta_4x_4  \}\\
-h_b(t;\mathbf{x}) &= h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 }\\
+h_a(t;\mathbf{x}) &= h_0(t)exp\{\beta_2x_2 + \beta_4x_4  \}\\
+h_b(t;\mathbf{x}) &= h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_4x_4 \}\\
 \end{aligned}
 $$
 
 Then the hazard ratio of treatment A versus treatment B is given by:
 $$
 \begin{aligned}
-\frac{h_b(t;\mathbf{x})}{h_a(t;\mathbf{x})}  &= \frac{h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 }}{h_0(t)exp\{ \beta_1\times 0 + \beta_2x_2 + \beta_3x_3 + \beta_4x_4 \}}\\
+\frac{h_b(t;\mathbf{x})}{h_a(t;\mathbf{x})}  &= \frac{h_0(t)exp\{\beta_1\times 1 + \beta_2x_2 + \beta_4x_4 \}}{h_0(t)exp\{ \beta_1\times 0 + \beta_2x_2 + \beta_4x_4 \}}\\
  &= \frac{h_o(t)exp\{\beta_1\times 1\}}{h_0(t)} \\
  &=exp\{\beta_1\}\\
  &= exp\{0.8144\} \\
@@ -127,33 +129,35 @@ $$
 Interpreting the confidence interval of (1.56, 3.28) means that at the $95\%$ confidence level that the hazard for patients on treatment B could be anywhere between just over one and half times and just over three and a quarter times that of the hazard for treatment A.
 
 # Question 2.3
-The median is calculated as follows where $median_a$ and $median_b$ be the median survival times for treatments A and B respectively. the reader is reminded that age is not significant in the model so was not included.:
+The median is calculated as follows where $median_a$ and $median_b$ be the median survival times for treatments A and B respectively. The reader is reminded that age and exercise were not significant in the model so were not included in the median life expectancy calculations either.
 $$
 \begin{aligned}
-\text{median}_a &= log(2)exp\{\beta_0 + \beta_1\times x_1 + \beta_2\times x_2 + \beta_3\times x_3 + \beta_4\times x_4 } \\
-&= log(2)exp\{\beta_0 + \beta_1\times x_{treat} + \beta_2\times x_{sex} + \beta_3\times x_{exer} + \beta_4\times x_{smok} \}\\
-&= log(2)exp\{0.5017 + 0.8144\times 1 - 0.5328\times x_{sex} - 0.2566\times x_{exer} - 0.8821\times x_{smok} \}
+\text{median}_a &= log(2)exp\{\beta_0 + \beta_1\times x_1 + \beta_2\times x_2  + \beta_4\times x_4 \} \\
+&= log(2)exp\{\beta_0 + \beta_1\times x_{treat} + \beta_2\times x_{sex}  + \beta_4\times x_{smok} \}\\
+&= log(2)exp\{0.5017 + 0.8144\times 1 - 0.5328\times x_{sex} - 0.8821\times x_{smok} \}\\
+&= log(2)exp\{1.3161 - 0.5328\times x_{sex} - 0.8821\times x_{smok} \}\\
 \\
-\text{median}_b &= log(2)exp\{\beta_0 + \beta_2\times x_{sex} + \beta_3\times x_{exer} + \beta_4\times x_{smok} \}\\
-&= log(2)exp\{0.5017 - 0.5328\times x_{sex} - 0.2566\times x_{exer} - 0.8821\times x_{smok} \}
+\text{median}_b &= log(2)exp\{\beta_0 + \beta_2\times x_{sex}  + \beta_4\times x_{smok} \}\\
+&= log(2)exp\{0.5017 - 0.5328\times x_{sex} - 0.8821\times x_{smok} \}
 \end{aligned}
 $$
 The question asks "using the R output" therefore we must tabulate the possible answers.  Note that given the short median times in years, it was considered useful to list the median life expectancies in both years and months.
 
-## Table of Median life expecancy for treatments A and B
+## Table of Median life expectancy for treatments A and B
+Scenario                   Median A (years)   Median B (years)  Median A (months) Median B (months)
+-------------------------- ------------------ ----------------- ----------------- ----------------
+$x_{sex}= 1, x_{smok} = 1$ 0.63               0.28              7.5               3.3
+$x_{sex}= 1, x_{smok} = 0$ 1.52               0.67              18.2              8.1
+$x_{sex}= 0, x_{smok} = 1$ 1.07               0.47              12.8              5.7
+$x_{sex}= 0, x_{smok} = 0$ 2.58               1.14              31.0              13.7
 
-Scenario                                 Median A (years)   Median B (years)  Median A (months) Median B (months)
----------------------------------------- ------------------ ----------------- ----------------- -----------------
-$x_{sex}= 1, x_{exer} = 1, x_{smok} = 1$ 0.49                0.22              5.8               2.6
-$x_{sex}= 1, x_{exer} = 1, x_{smok} = 0$ 1.17                0.52              14.1              6.2
-$x_{sex}= 1, x_{exer} = 0, x_{smok} = 1$ 0.63                0.28              7.5               3.3
-$x_{sex}= 1, x_{exer} = 0, x_{smok} = 0$ 1.52                0.67              18.2              8.1
-$x_{sex}= 0, x_{exer} = 1, x_{smok} = 1$ 0.83                0.37              9.9               4.4
-$x_{sex}= 0, x_{exer} = 1, x_{smok} = 0$ 2.00                0.89              24.0              10.6
-$x_{sex}= 0, x_{exer} = 0, x_{smok} = 1$ 1.07                0.47              12.8              5.7
-$x_{sex}= 0, x_{exer} = 1, x_{smok} = 0$ 2.59                1.15              31.0              13.7
+The median life expectancies demonstrate what we would expect from the coefficients and the coding that:
+
+* Life expectancies using treatment B can be expected to be shorter than those of treatment A.
+* Women tend to have a shorter life expectancy than men.
+* Smokers tend to have a shorter life expectancy than non-smokers.
 
 # Question 2.4
-Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We need to assess which covariates are consistent across all groups and which are not, only exercise can be considered.
+Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We need to assess which covariates are consistent across all groups and which are not.
 
 
