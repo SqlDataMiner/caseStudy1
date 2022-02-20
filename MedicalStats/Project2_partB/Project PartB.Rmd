@@ -207,11 +207,40 @@ $$
 &= \mathlarger{\frac{h_o(t)exp\{\beta_2\times 1\}}{h_0(t)}} \\
 &=exp\{\beta_2\}\\
 &= exp\{-0.5328\} \\
+&= 0.587 \\
 \\
-95\% \text{ CI } &= (exp\{\beta_2 - 1.96*s.e(\beta_2)\}, exp\{\beta_2 + 1.96*s.e(\beta_2)\})\\
-&= (exp\{-0.52328 - 1.96*0.1911\}, exp\{-0.52328 + 1.96*0.1911\})\\
+95\% \text{ CI } &= (exp\{\beta_2 - 1.96\times s.e(\beta_2)\}, exp\{\beta_2 + 1.96\times s.e(\beta_2)\})\\
+&= (exp\{-0.52328 - 1.96\times 0.1911\}, exp\{-0.52328 + 1.96\times 0.1911\})\\
 &= (0.41, 0.86) \\
 \\
+\\
+\mathlarger{\frac{h_{smoker}(t;\mathbf{x})}{h_{non-smoker}(t;\mathbf{x})}} &= \mathlarger{\frac{h_0(t)exp\{\beta_1x_1 + \beta_2x_2 + \beta_4\times 1 \}}{h_0(t)exp\{ \beta_1x_1 + \beta_2x_2 + \beta_4\times 0 \}}} \\
+\\
+&= \mathlarger{\frac{h_o(t)exp\{\beta_4\times 1\}}{h_0(t)}} \\
+&=exp\{\beta_4\}\\
+&= exp\{-0.8821\} \\
+&= 0.414 \\
+\\
+95\% \text{ CI } &= (exp\{\beta_4 - 1.96\times s.e(\beta_4)\}, exp\{\beta_4 + 1.96\times s.e(\beta_4)\})\\
+&= (exp\{-0.8821 - 1.96\times 0.1915\}, exp\{-0.8821 + 1.96\times 0.1915\})\\
+&= (0.28, 0.60) \\
 \end{aligned}
 $$
+We can now compare if the hazard ratios are the same.
+$$
+\begin{aligned}
+\text{let } \bar{x} &=  exp\{\beta_2\} - exp\{\beta_4\} \\
+&= exp\{-0.5328\} - exp\{-0.8821\} \\
+&= 0.173\\
+\\
+\text{let } \sigma &= \sqrt{s.e(\beta_2)^2 + s.e(\beta_4)^2}\\
+&= \sqrt{0.1911^2 + 0.1915^2} \\
+&= 0.27 \\
+\\
+95\% \text{ CI } &= \bar{x} \pm 1.96 \times \sigma \\
+&= 0.173 \pm 1.96 \times 0.27\\
+&= (-0.36, 0.70)
+\end{aligned}
+$$
+Hence as the confidence interval covers zero there is no evidence to support a difference between the hazard ratios of females to males and the hazard ratios of smokers to non smokers.  The investigator was correct to suggest based on the evidence that the two hazards are the same.
 
