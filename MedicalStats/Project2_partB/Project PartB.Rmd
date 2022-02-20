@@ -8,7 +8,7 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(survival)
-library(dplyr)
+library(tidyverse)
 library(ggplot2)
 data <- load("Data/E_PartB_data.RData")
 ```
@@ -47,10 +47,46 @@ title( "Kaplan-Meier  plot of trial B drug", line= -1 )
 
 
 # Question 1.2
-Things to comments on: earliest death, average death, calculate rough quartiles. longest death. Look at error bounds. Number of people in the study. number who were censored.
+The plot of drug A shows:
+* The median survival time was between 13.4 months (p=0.52) and 19.1 months (p=0.44).
+* The last remaining (uncensored) patient died at 52.4 months.
+* The trial consisted of 20 patients of whom 14 dies and 6 were censored.
+
+The plot of drug B shows:
+* That the median survival time was between 5.0 months (p=0.55) and 5.7 months (p=0.50) months.
+* The last remaining (uncensored) patient died at 19.1 months.
+* The trial consisted of 25 patients of whom 17 died and 8 were censored.
+
+The plot of A is over a longer term greater than 50 months (52.4) so the gradient over time is less pronounces than plot B which is under 20 months (19.1).  However as the y-axis are shown to different scales this is less pronounced visbility than it would be if plotted together on a single plot.
+
+The confidence interval is wide on both plots, we can expect this given the small number of patients, n=25 and n=20, plus the proprtionally high numbers of censored patients, 8 and 6 respectively.  To reduce the confidence interval a larger number of patients and more frequent assessments can be used.  It appears that the confidence intervals overlap to a large extent, however as this is the focus of Q1.3 we will consider that there.
 
 # Question 1.3
-Answer to Question 1.3 here
+A simple (albeit less accurate) approach to considering this question is to ask at the quartiles does the time periods overlap between groups.  If the time periods do overlap between the groups then we have insufficent evidence that the groups differ.  However if the time periods do not overlap then that points to their being potential differences in the groups.  Tabulaing this data we get:
+
+Quartile Drug Probability of survival Conf. Int.   Time (Months)
+-------- ---- ----------------------- ------------ -----------
+Q3        A    0.78 - 0.72            0.10 - 0.54  3.7 - 4.3
+Q3        B    0.77 - 0.71            0.97 - 0.55  1.3 - 2.0
+Q2        A    0.52 - 0.44            0.84 - 0.25  13.4 - 19.1
+Q2        B    0.55 - 0.50            0.82 - 0.32  5.0 - 5.7
+Q1        A    0.27 - 1.18            0.66 - 0.05  34.0 - 37.1
+Q1        B    0.25 - 0.19            0.57 - 0.07  12.0 - 15.6
+
+
+It is apparent from the output that for each quartile of the time periods overlap between the drug trials.  This allows us to believe there may be a difference between the trials (we only need one non-overlap not all).  To evaluate this probability we need to use a statistical test based on a chi-square test (which I believe medics are taught).  Running the following R code allows us to evaluate this claim, generating a probability `trial.p` as to whether the drug trials are equal.  Using `survdiff` function we are specifying our model using `Surv` with `time`, `event` which is named `status` in our data and refers to whether the event is censored or not; `~ drug` means assess between the different groups whilst `data` is the dataframe which we are using to pass in our data.
+```{r include=TRUE}
+options(digits = 3)
+trial.diff <-  survdiff(Surv(time=time, event=status, type="right") ~ drug, data=q1dat)
+trial.diff
+trial.p <- format(1 - pchisq(trial.diff$chisq, length(trial.diff$n) - 1), digits = 3)
+print(str_glue("The probability of the drug trials being equal is: {trial.p}"))
+```
+From the chiquare test that the survdiff function performs for us we can see that there is some/moderate evidence (p=0.01) at the 95\% probability level to support the drugs having a difference in survival times. The 95\% probability level means that were we to rerun the trial for a total of 20 times then we would expect on average for 19 of the trials to reach this conculsion.  The chisquare test calculates probability by comparing the expected values against the observed values.
+
+Hence I believe the clinician is mistaken to state that there isn't any difference in survival times for those taking drug A and those taking drug B. As there is moderate evidence (p=0.01) suggesting a difference between the drugs.  Looking at the plots and the data given we know there is moderate evidence of a difference then drug A typically leads to a longer survival time than drug B.  This can be seen in the quartile tabulations done above, so at quarter two (the median) life expectancy of drug A is: 13.4 - 19.1 months versus drug B which is 5.0 - 5.7 months.
+
+
 
 # Question 2
 
@@ -159,12 +195,9 @@ The median life expectancies demonstrate what we would expect from the coefficie
 * Smokers tend to have a shorter life expectancy than non-smokers.
 
 # Question 2.4
-Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.  We know that there are significant differences between treatment A and treatment B; therefore to avoid Simpson's paradox we must perform two hypothesis tests, namely:
-
-* Null Hypothesis for Treatment A: $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment A})}{h_{male}(t;\mathbf{x}|\text{treatment A})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment A})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment A})}}$
+Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.
 
 
-* Null Hypothesis for Treatment B: $\mathlarger{\frac{h_{female}(t;\mathbf{x}|\text{treatment B})}{h_{male}(t;\mathbf{x}|\text{treatment B})} = \frac{h_{smoker}(t;\mathbf{x}|\text{treatment B})}{h_{non-smoker}(t;\mathbf{x}|\text{treatment B})}}$
-
+Null Hypothesis: $\mathlarger{\frac{h_{female}(t;\mathbf{x})}{h_{male}(t;\mathbf{x})} = \frac{h_{smoker}(t;\mathbf{x})}{h_{non-smoker}(t;\mathbf{x})}}$
 
 
