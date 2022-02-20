@@ -198,7 +198,20 @@ The median life expectancies demonstrate what we would expect from the coefficie
 Considering the statement that the hazard ratios of females to males and smokers to non-smokers are the same.
 
 
-Null Hypothesis: $\mathlarger{\frac{h_{female}(t;\mathbf{x})}{h_{male}(t;\mathbf{x})} }$
+Null Hypothesis: $\mathlarger{\frac{h_{female}(t;\mathbf{x})}{h_{male}(t;\mathbf{x})} = \frac{h_{smoker}(t;\mathbf{x})}{h_{non-smoker}(t;\mathbf{x})}}$
 
-
+$$
+\begin{aligned}
+\mathlarger{\frac{h_{female}(t;\mathbf{x})}{h_{male}(t;\mathbf{x})}} &= \mathlarger{\frac{h_0(t)exp\{\beta_1x_1 + \beta_2\times 1 + \beta_4x_4 \}}{h_0(t)exp\{ \beta_1x_1 + \beta_2\times 0 + \beta_4x_4 \}}} \\
+\\
+&= \mathlarger{\frac{h_o(t)exp\{\beta_2\times 1\}}{h_0(t)}} \\
+&=exp\{\beta_2\}\\
+&= exp\{-0.5328\} \\
+\\
+95\% \text{ CI } &= (exp\{\beta_2 - 1.96*s.e(\beta_2)\}, exp\{\beta_2 + 1.96*s.e(\beta_2)\})\\
+&= (exp\{-0.52328 - 1.96*0.1911\}, exp\{-0.52328 + 1.96*0.1911\})\\
+&= (0.41, 0.86) \\
+\\
+\end{aligned}
+$$
 
