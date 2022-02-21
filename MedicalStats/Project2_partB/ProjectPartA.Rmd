@@ -3,18 +3,37 @@ title: "MAS61002 Project Part A  \n Registration Number: 210138744"
 geometry: "left=1cm,right=1cm,top=2cm,bottom=2cm"
 header-includes: \usepackage{relsize}
 output: pdf_document
+fontsize: 12pt
 ---
 
 
 # Summary of the evidence of an interaction between: certain citrus fruits and treatment for hypertension with calcium channel blockers
 
 ## Report
+Huang and Lesko (2004) describe possible drug citrus fruit interactions, which detail grapefruit juice effects on calcium channel blockers; additionally they describe orange juice interacting with drugs though not calcium channel blockers.  Dahan and Alman (2004) list the following mentioned drugs as calculm channel antagonists whose interaction with grapefruit juice increase the risk of hypotension and tachicardia for: Felodipine, Nisildipine, Nicardipine, Nitrendipine, Pranidpine, Nimoldipine and Verapamil; the risks are all associated with increased bioavilability due to grapefruit juice.
+
+Sica (2006) expounds on the interactions of grapefuit juice showing the interaction causes: Felodipine increase bioavailability by 2-3 fold; Nicardipine AUC (area under curve - represents total drug exposure over time) increased by 43% ($\pm 3.4\%$); Nimodipine $C_{max}$ (the maximum serum concentration the drug achieves) 24% increase and AUC increase 51%; Nisoldpine $C_{max}$ 406% ($\pm 73\%$) increase, AUC 198% ($\pm 46\%$) increase; Nitrendipine  $C_{max}$ 99%  increase, AUC 106% increase; Verapamil no significant change in $C_{max}$ or AUC but some interindividual variability.
+
+Kane and Lipsky (2000) state that pranidipine, nisolddipine and nimidipine upon ingesting a single glass of grapefruit juice causes a 1.5 fold increase in bioavialability.  Whilst nifedipine are less affected though still increasing the blood drug levels by 20-30% results in much less adverse effects due to the better inherent oral bioavilabilities.
+
+Fuhr (1998) summerises the research demostrating that the effect from grapefuit is when ingested orally as intravenous adminstration "had no effect on the pharmacokientics of these agents". Kane and Lipsky (2000) highlight that it is not only grapefruit juice but also pulp, peel and core of the fruit; adding that "...blended grapefruit segements and extract from grapefruit peel cause a similar interaction with felodipine as does the juice.".
+
+Dahan and Alman (2004) discussed the amounts and timings of ingestion which can cause an interaction.  They found that a 250ml of regular strength grapefruit juice is sufficent to produce the maximum effect.  That taking grapefruit juice 24 hours prior to ingesting felodipine caused an effect to exist at about 30% of its maximum.  They also note that the persistance of the juices impact can be seen for up to 3 days, though 24 hours is clinically relevant.
+
+Therefore patients prescribed calcium channel blockers should be advised NOT to consume grapefruit consituents or juice, being informed of the risks of doing so.
 
 \newpage
 
 ## Reference list
 
+* Huang, S.-M. and Lesko, L.J. (2004) ‘Drug-Drug, Drug-Dietary Supplement, and Drug-Citrus Fruit and Other Food Interactions: What Have We Learned?’, Journal of clinical pharmacology. Revised version accepted March 15, 2004, 44(6), pp. 559–569. doi:10.1177/0091270004265367. https://find.shef.ac.uk/permalink/f/98odl8/TN_cdi_pubmed_primary_15145962
+* Kane, G.C. and Lipsky, J.J. (2000) ‘Drug–Grapefruit Juice Interactions’, Mayo Clinic proceedings, 75(9), pp. 933–942. doi:10.4065/75.9.933. https://find.shef.ac.uk/permalink/f/98odl8/TN_cdi_pubmed_primary_10994829
+* Fuhr, U. (1998) ‘Drug Interactions with Grapefruit Juice: Extent, Probable Mechanism and Clinical Relevance’, Drug Safety, 18(4), pp. 251–272. doi:10.2165/00002018-199818040-00002. https://find.shef.ac.uk/permalink/f/98odl8/TN_cdi_springer_primary_1998_40264_18_4_18040251
+* Dahan, A. and Altman, H. (2004) ‘Food-drug interaction: grapefruit juice augments drug bioavailability mechanism, extent and relevance’, European journal of clinical nutrition, 58(1), pp. 1–9. doi:10.1038/sj.ejcn.1601736. https://find.shef.ac.uk/permalink/f/98odl8/TN_cdi_crossref_primary_10_1038_sj_ejcn_1601736
+* Sica, D.A. (2006) ‘Interaction of Grapefruit Juice and Calcium Channel Blockers’, American journal of hypertension, 19(7), pp. 768–773. doi:10.1016/j.amjhyper.2005.11.003. https://find.shef.ac.uk/permalink/f/98odl8/TN_cdi_webofscience_primary_000238887100020CitationCount
+
 ## Lay summary
+Whilst taking calcium channel blockers you should avoid grapefruit juice or any grapefruit based food.  Even consuming grapefruit 24 hours prior to medication can cause an increase in hypertension and increased heart rate.  As the calcium channel blocker is being used to treat hypertension by consuming grapefuit in either juice or as a fruit it can cause an increase in hypertension. This is especially concerning that it can worsen the condition for those already suffering from it hence do not consume any grapefuit or juice.
 
 ## Search strategy
 Search engines used were:
