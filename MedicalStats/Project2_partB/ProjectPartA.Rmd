@@ -1,0 +1,31 @@
+---
+title: "MAS61002 Project Part A  \n Registration Number: 210138744"
+geometry: "left=1cm,right=1cm,top=2cm,bottom=2cm"
+header-includes: \usepackage{relsize}
+output: pdf_document
+---
+
+
+# Summary of the evidence of an interaction between: certain citrus fruits and treatment for hypertension with calcium channel blockers
+
+## Report
+
+\newpage
+
+## Reference list
+
+## Lay summary
+
+## Search strategy
+Search engines used were:
+
+* Duck Duck Go: https://duckduckgo.com/
+* Google Scholar: https://scholar.google.co.uk/
+* University of Sheffield StarPlus: https://find.shef.ac.uk/primo-explore/search?tab=everything&vid=44SFD_VU2
+
+The search terms used in all search engines were:
+
+* calcium channel blockers hypertension citrus fruits
+* calcium channel blockers citrus fruits
+* calcium channel blockers hypertension grapefruit
+* calcium channel blockers grapefruit
