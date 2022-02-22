@@ -4,7 +4,7 @@ geometry: "left=1cm,right=1cm,top=2cm,bottom=2cm"
 header-includes: \usepackage{relsize}
 output: pdf_document
 ---
-
+\colorbox{yellow}{\textcolor{black}{YELLOW STICKER}}
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(survival)

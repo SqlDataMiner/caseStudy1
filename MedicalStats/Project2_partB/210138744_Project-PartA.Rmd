@@ -1,11 +1,11 @@
 ---
 title: "MAS61002 Project Part A  \n Registration Number: 210138744"
-geometry: "left=1cm,right=1cm,top=2cm,bottom=2cm"
+geometry: "left=1cm,right=1cm,top=1cm,bottom=2cm"
 header-includes: \usepackage{relsize}
 output: pdf_document
 fontsize: 12pt
 ---
-
+\colorbox{yellow}{\textcolor{black}{YELLOW STICKER}}
 
 # Summary of the evidence of an interaction between: certain citrus fruits and treatment for hypertension with calcium channel blockers
 
