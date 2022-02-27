@@ -1,0 +1,72 @@
+---
+title: "Generalised Linear Models Exercise 1"
+author: Stephen Wotton (210138744)
+geometry: "left=2cm,right=2cm,top=2cm,bottom=2cm"
+output: pdf_document
+---
+
+```{r setup, include=TRUE}
+#install packages
+if(!(require(tidyverse))){install.packages('tidyverse')}
+
+#load libraries
+library(tidyverse)
+
+#load source files
+load("data/GLM.RData")
+```
+## Question 1
+```{r include=TRUE}
+digits <- 3
+options(digits=digits)
+
+# Logit is the default link but no harm being explict.
+model.a <- glm(propn.dead ~ conc, family = binomial(link="logit"), weights=number, data=beetle)
+
+summary(model.a)
+
+model.a.predicted.dead <- model.a$fitted*beetle$number
+model.a.predicted.dead
+
+model.a.beta.0 <- round(model.a$coefficients[[1]], digits = digits)
+model.a.beta.1 <- round(model.a$coefficients[[2]], digits=digits)
+print("")
+print(str_glue("Model A is: {model.a.beta.0} + {model.a.beta.1}x[i]"))
+print("")
+model.a.diff <-  beetle$dead - model.a.predicted.dead
+model.a.diff.squared <- model.a.diff^2
+model.a.error <- round(sum(model.a.diff.squared), digits = digits)
+
+model.b <- glm(propn.dead ~ conc + I(conc^2), family = binomial(link="logit"), weights=number, data=beetle)
+
+summary(model.b)
+
+model.b.predicted.dead <- model.b$fitted*beetle$number
+model.b.predicted.dead
+
+model.b.beta.0 <- round(model.b$coefficients[[1]], digits = digits)
+model.b.beta.1 <- round(model.b$coefficients[[2]], digits = digits)
+model.b.beta.2 <- round(model.b$coefficients[[3]], digits = digits)
+print(str_glue("Model B is: {model.b.beta.0} + {model.b.beta.1}x[i] + {model.b.beta.1}x[i]^2"))
+
+model.b.diff <-  beetle$dead - model.b.predicted.dead
+model.b.diff.squared <- model.b.diff^2
+model.b.error <- round(sum(model.b.diff.squared), digits = digits)
+
+print(str_glue("Model A error is: {model.a.error}, model B error is: {model.b.error}"))
+```
+Hence as we would expect with more parameters in the model we can achieve a better fit with the quadratic term of model B.
+
+## Question 2
+
+### A
+
+### B
+
+### C
+
+### D
+
+#### A
+
+#### B
