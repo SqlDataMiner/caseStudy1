@@ -91,7 +91,6 @@ binomCreate <- function(i) {
 }
 
 interate.vec <- 1:desired.vector.length
-interate.vec
 
 bin.y <- sapply(interate.vec, binomCreate)
 bin.y
@@ -100,5 +99,44 @@ bin.y
 Note that the exercise sheet does not say question three but the list going back to (a) suggests that it is.
 
 #### A
+```{r include=TRUE}
+log.reg.pro <- glm( prob.pi ~ normal.n + covariates.z, family = binomial(link="probit"))
+summary(log.reg.pro)
+
+log.reg.pro.fitted <- log.reg.pro$fitted
+log.reg.pro.fitted.in.requested.range <- log.reg.pro.fitted[1:10]
+log.reg.pro.fitted.in.requested.range
+print(str_glue("To calculate y5 by hand we need variables: x5 {round(normal.n[5], digits=4)}, z5 {round(covariates.z[5], digits=4)}"))
+```
+Therefore $y_5 = \phi(-1 + x_5 + 0.4*z_5) = \phi(-1 +  0.6895 +  0.4*0.9342) = \phi(0.06318) = 0.525189$
+This was worked out on calculator, note when rounded off to same number of significant places the value is the same as R, namely $y_5= 0.5252$.
+
+
 
 #### B
+```{r include=TRUE}
+log.reg.logit <- glm( prob.pi ~ normal.n + covariates.z, family = binomial(link="logit"))
+summary(log.reg.logit)
+
+log.reg.logit.fitted <- log.reg.logit$fitted
+log.reg.logit.fitted.in.requested.range <- log.reg.logit.fitted[1:10]
+log.reg.logit.fitted.in.requested.range
+print(str_glue("To calculate y5 by hand we need variables: x5 {round(normal.n[5], digits=6)}, z5 {round(covariates.z[5], digits=6)}"))
+```
+Therefore $u_5 = h(x_5) = h(-1.694 + 1.694*x_5 + 0.687*z_5) = h(-1.694 + 1.694*0.689537 + 0.687*0.934195) = h(0.1158676) = exp(0.1158676)/(1 + exp(0.1158676) = 0.5289193$
+This was worked out on calculator, the number is approximately correct however there must be rounding issues somewhere as R gets 0.5291 and I get 0.52892 despite trying to work to greater precision!!  Apologies for this.
+
+#### Commentry
+The residual deviance (a measure of how good the predictor is by comparing error) was:
+
+  * probit link model was: `Residual deviance: 6.5677e-16  on 27  degrees of freedom`
+  * logit link model was `Residual deviance:  0.020006  on 27  degrees of freedom`
+
+This makes the probit link model a better model.
+
+Comparing the null deviance we had:
+
+  * probit link model was: `Null deviance: 1.4322e+01  on 29  degrees of freedom`
+  * logit link model was `Null deviance: 14.321802  on 29  degrees of freedom`
+
+Therefore the probit's models intercept term better explains the data.  However both models are good predictors as the residual deviance shows.
