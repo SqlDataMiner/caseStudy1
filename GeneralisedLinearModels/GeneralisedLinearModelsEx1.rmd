@@ -30,9 +30,7 @@ model.a.predicted.dead
 
 model.a.beta.0 <- round(model.a$coefficients[[1]], digits = digits)
 model.a.beta.1 <- round(model.a$coefficients[[2]], digits=digits)
-print("")
 print(str_glue("Model A is: {model.a.beta.0} + {model.a.beta.1}x[i]"))
-print("")
 model.a.diff <-  beetle$dead - model.a.predicted.dead
 model.a.diff.squared <- model.a.diff^2
 model.a.error <- round(sum(model.a.diff.squared), digits = digits)
@@ -60,12 +58,46 @@ Hence as we would expect with more parameters in the model we can achieve a bett
 ## Question 2
 
 ### A
-
+```{r include=TRUE}
+desired.vector.length <- 30
+set.seed(3)
+poission <- rpois(desired.vector.length, lambda = 10)
+poission
+```
 ### B
-
+```{r include=TRUE}
+normal.n <- rnorm(desired.vector.length, mean = 1, sd=1)
+covariates.z <- rnorm(desired.vector.length, mean=0, sd=2)
+normal.n
+covariates.z
+```
 ### C
-
+```{r include=TRUE}
+beta.zero =  rep(c(-1), times=desired.vector.length)
+phi.input.values <- beta.zero  + normal.n + 0.4*covariates.z
+phi.input.values
+prob.pi <- pnorm(phi.input.values)
+prob.pi
+```
 ### D
+```{r include=TRUE}
+
+binomCreate <- function(i) {
+  n <- 1
+  s <- poission[i]
+  p <- prob.pi[i]
+
+  rbinom(n=n, size=s, prob=p)
+}
+
+interate.vec <- 1:desired.vector.length
+interate.vec
+
+bin.y <- sapply(interate.vec, binomCreate)
+bin.y
+```
+## Question 3
+Note that the exercise sheet does not say question three but the list going back to (a) suggests that it is.
 
 #### A
 
